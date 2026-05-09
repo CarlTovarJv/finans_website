@@ -1,0 +1,109 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  createdAt DateTime @default(now())
+
+  incomes Incomes[]
+  outflows Outflows[]
+  sales Sales[]
+  budget Budget[]
+  ai_requests AI_requests[]
+  reports Reports[]
+  inventory Inventory[]
+  financial_goals Financial_goals[]
+}
+
+model Incomes {
+  id          Int      @id @default(autoincrement())
+  amount      Float
+  description String
+  income_type  String
+  date        DateTime @default(now())
+  user_id      Int
+  user        User     @relation(fields: [user_id], references: [id])
+}
+
+model Outflows {
+  id          Int      @id @default(autoincrement())
+  amount      Float
+  description String
+  outflow_type  String
+  date        DateTime @default(now())
+  user_id      Int
+  user        User     @relation(fields: [user_id], references: [id])
+}
+
+model Sales {
+  id          Int      @id @default(autoincrement())
+  revenues      Float
+  outflows      Float
+  item_sold   String
+  quantity_of_sold_items Int
+  price_of_item Float
+  date        DateTime @default(now())
+  user_id      Int
+  user        User     @relation(fields: [user_id], references: [id])
+}
+
+model Budget {
+  id          Int      @id @default(autoincrement())
+  item_name   String
+  item_price Float
+  revenues_available Float
+  outflows_to_come Float
+  date        DateTime @default(now())
+  user_id      Int
+  user        User     @relation(fields: [user_id], references: [id])
+}
+
+model AI_requests {
+  id          Int      @id @default(autoincrement())
+  request_text String
+  response_text String
+  date        DateTime @default(now())
+  user_id      Int
+  user        User     @relation(fields: [user_id], references: [id])
+}
+
+model Reports {
+  id          Int      @id @default(autoincrement())
+  report_url String
+  date        DateTime @default(now())
+  user_id      Int
+  user        User     @relation(fields: [user_id], references: [id])
+}
+
+model Inventory {
+  id          Int      @id @default(autoincrement())
+  item_name   String
+  quantity_of_available_items Int
+  price       Float
+  date        DateTime @default(now())
+  user_id      Int
+  user        User     @relation(fields: [user_id], references: [id])
+}
+
+model Financial_goals {
+  id          Int      @id @default(autoincrement())
+  goal_name   String
+  target_amount Float
+  current_amount Float
+  date        DateTime @default(now())
+  user_id      Int
+  user        User     @relation(fields: [user_id], references: [id])
+}
