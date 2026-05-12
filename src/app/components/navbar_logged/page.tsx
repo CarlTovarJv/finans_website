@@ -24,14 +24,14 @@ export default function NavbarLogged() {
   return (
     <nav className="flex items-center justify-between px-6 py-2  border-b">
       <div>
-        <Image src="/logos/isotipo-finans.png" alt="Logo" width={32} height={32} />
+          <Image src="/logos/isotipo-finans.png" alt="Logo" width={32} height={32} />
       </div>
       <div className="flex-1 mx-34">
         <SearchBar />
       </div>
-      <div className="flex items-center mx-35 space-x-4">
+      <div className="flex items-center mx-35 space-x-4 ">
 
-        <Button className="h-8 w-17" variant="outline"></Button>
+        <Button className="h-8 w-25 bg-[#010221] text-[#ffffff]" variant="outline">Check Goals</Button>
 
         {/* Here goes the Clerk Profile components */}
       </div>

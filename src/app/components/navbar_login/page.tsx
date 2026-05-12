@@ -29,7 +29,7 @@ export default function NavbarLogged() {
       <div className="flex-1 mx-34">
         <SearchBar />
       </div>
-      <div className="flex items-center mx-35    space-x-4">
+      <div className="flex items-center mx-4    space-x-4">
         <Button className="h-8 w-17" variant="outline">Login</Button>
         <Button className="h-8 w-20" variant="default">Signup</Button>
       </div>
