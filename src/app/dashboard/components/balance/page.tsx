@@ -1,7 +1,12 @@
-export default function balance() {
-  const assets = 10000;
-  const liabilities = 4000;
-  const equity = assets - liabilities;
+import {prisma} from "@/lib/prisma";
+
+export default async function balance() {
+  const [assets, liabilities] = await Promise.all([
+    prisma.incomes.aggregate({ _sum: { amount: true },}),
+    prisma.outflows.aggregate({ _sum: { amount: true } }),
+  ]);
+
+  const equity = (assets._sum.amount ?? 0) - (liabilities._sum.amount ?? 0);
 
   const fmt = (n: number) =>
     "$" + n.toLocaleString("en-US");
@@ -10,7 +15,7 @@ export default function balance() {
         <div className="bg-white rounded-2xl shadow-md p-8 w-full  font-sans">
 
             {/* Title */}
-            <h2 className="text-xl font-bold text-gray-900 mb-8">Balance Sheet</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Balance Sheet</h2>
 
             {/* Table */}
             <div className="grid grid-cols-3 gap-2">
@@ -23,8 +28,8 @@ export default function balance() {
                 <div className="col-span-3 border-t border-gray-300 my-2"></div> 
 
                 {/* Values */}
-                <span className="text-xl font-bold text-gray-900">{fmt(assets)}</span>
-                <span className="text-xl font-bold text-gray-900 text-center">{fmt(liabilities)}</span>
+                <span className="text-xl font-bold text-gray-900">{fmt(assets._sum.amount ?? 0)}</span>
+                <span className="text-xl font-bold text-gray-900 text-center">{fmt(liabilities._sum.amount ?? 0)}</span>
                 <span className="text-xl font-bold text-gray-900 text-right">{fmt(equity)}</span>
             </div>
 
@@ -34,8 +39,8 @@ export default function balance() {
             </p>
 
             {/* Formula values */}
-            <p className="text-base text-gray-300 mt-2 tracking-wide">
-                {fmt(equity)} = {fmt(assets)} - {fmt(liabilities)}
+            <p className="text-base text-blue-300 mt-2 tracking-wide">
+                {fmt(equity)} = {fmt(assets._sum.amount ?? 0)} - {fmt(liabilities._sum.amount ?? 0)}
             </p>
 
         </div>

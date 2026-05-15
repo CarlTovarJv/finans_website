@@ -1,5 +1,3 @@
-// components/Goals.tsx
-
 const goals = [
   { label: "Increase Sales by 10%",                progress: 60,  color: "#2d2f6b" },
   { label: "Reduce merchandise cost by 3%",         progress: 40,  color: "#3d3f8f" },
@@ -23,10 +21,10 @@ export default function Goals() {
               style={{ backgroundColor: goal.color }}
             />
 
-            {/* Nombre del goal */}
+            {/* Goal name */}
             <span className="text-sm text-gray-600 w-64 shrink-0">{goal.label}</span>
 
-            {/* Barra de progreso */}
+            {/* Progress bar */}
             <div className="flex-1 bg-gray-200 rounded-full h-2.5">
               <div
                 className="h-2.5 rounded-full"
@@ -37,7 +35,7 @@ export default function Goals() {
               />
             </div>
 
-            {/* Porcentaje */}
+            {/* Percentage */}
             <span className="text-sm font-bold text-gray-900 w-10 text-right shrink-0">
               {goal.progress}%
             </span>
