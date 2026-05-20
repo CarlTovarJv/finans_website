@@ -6,7 +6,7 @@ import Goals from "./components/goals/page";
 
 export default function Dashboard() {
   return (
-    <main className="min-h-screen bg-gray-200 text-black p-8 space-y-15">
+    <main className="min-h-screen bg-olive-100 text-black p-8 space-y-15">
 
       <div>
         <Data />
