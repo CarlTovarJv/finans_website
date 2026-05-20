@@ -13,20 +13,16 @@ export default function Footer() {
             {/* Logo + name */}
             <div className="flex items-center gap-2">
               <Image
-                src="/logos/isotipo-finans.png"
+                src="/logos/imagotipo-finans2.png"
                 alt="Kuali logo"
-                width={32}
-                height={32}
+                width={72}
+                height={72}
               />
-              <div>
-                <p className="font-semibold text-[#010221] leading-tight">Kuali</p>
-                <p className="text-xs text-[#4A90D9]">Your AI Finance Assistant</p>
-              </div>
             </div>
 
             {/* Description */}
             <p className="text-xs text-gray-500 leading-relaxed max-w-42">
-              Kuali helps small businesses track, understand and grow their finances with the power of AI.
+              Finans helps small businesses track, understand and grow their finances with the power of AI.
             </p>
 
             {/* Social icons */}

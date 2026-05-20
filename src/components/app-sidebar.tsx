@@ -45,7 +45,7 @@ const data = {
       url: "#",
       items: [
         { title: "AI chat", url: "/ai-chat" },
-        { title: "Scanner", url: "/scanner" },
+        { title: "Scanner", url: "/ocr" },
       ],
     },
     {
@@ -60,7 +60,7 @@ const data = {
       title: "Premium",
       url: "#",
       items: [
-        { title: "Get Premium", url: "/premium" },
+        { title: "Get Premium", url: "/plans" },
       ],
     }
   ],
@@ -115,7 +115,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             isActive={isActive}
                             className={`transition-none duration-0 relative group ${
                               isActive 
-                                ? "bg-[#010221]/5 text-[#010221] font-bold border-r-2 border-[#010221]" 
+                                ? "bg-[#010221]/5 text-[#010221] font-bold" 
                                 : "text-gray-500 hover:text-[#010221] hover:bg-gray-50"
                             }`}
                           >

@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 import { ClerkProvider } from '@clerk/nextjs';
 import { auth } from '@clerk/nextjs/server';
 import NavbarWrapper from "@/components/NavbarWrapper"; 
-import Footer from "@/components/footer";
 
 import { AppSidebar } from "@/components/app-sidebar"
 import {
@@ -50,7 +49,6 @@ export default async function RootLayout({
               <main className="flex-1">
                 {children}
               </main>
-              <Footer />
             </div>
           ) : (
 
