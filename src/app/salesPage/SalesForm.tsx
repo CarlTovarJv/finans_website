@@ -21,7 +21,7 @@ export default function SalesForm() {
             <Input
               id="product"
               placeholder="Enter product"
-              className="h-10 border-[#dcdcdc] text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-transparent focus-visible:border-[#dcdcdc] placeholder:text-[#bdbdbd]"
+              className="h-10 border-[#dcdcdc] text-sm shadow-sm outline-none transition focus-visible:border-[#c9d2e3] focus-visible:ring-2 focus-visible:ring-[#d9e3f5] placeholder:text-[#bdbdbd]"
             />
 
           </div>
@@ -38,7 +38,7 @@ export default function SalesForm() {
             <Input
               id="quantity"
               placeholder="Enter quantity"
-              className="h-10 border-[#dcdcdc] text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-transparent focus-visible:border-[#dcdcdc] placeholder:text-[#bdbdbd]"
+              className="h-10 border-[#dcdcdc] text-sm shadow-sm outline-none transition focus-visible:border-[#c9d2e3] focus-visible:ring-2 focus-visible:ring-[#d9e3f5] placeholder:text-[#bdbdbd]"
             />
 
           </div>
@@ -52,7 +52,7 @@ export default function SalesForm() {
               Unit Price
             </label>
 
-            <div className="flex h-10 items-center overflow-hidden rounded-md border border-[#dcdcdc]">
+            <div className="flex h-10 items-center overflow-hidden rounded-md border border-[#dcdcdc] shadow-sm transition focus-within:border-[#c9d2e3] focus-within:ring-2 focus-within:ring-[#d9e3f5]">
 
               <div className="flex h-full w-10 items-center justify-center border-r border-[#dcdcdc] text-sm text-black">
                 $
@@ -61,7 +61,7 @@ export default function SalesForm() {
               <Input
                 id="price"
                 placeholder="0.00"
-                className="h-full border-0 text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-transparent placeholder:text-[#bdbdbd]"
+                className="h-full border-0 text-sm shadow-none outline-none focus-visible:ring-0 placeholder:text-[#bdbdbd]"
               />
 
             </div>
@@ -80,7 +80,7 @@ export default function SalesForm() {
             <Input
               id="date"
               type="date"
-              className="h-10 border-[#dcdcdc] text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-transparent"
+              className="h-10 border-[#dcdcdc] text-sm shadow-sm outline-none transition focus-visible:border-[#c9d2e3] focus-visible:ring-2 focus-visible:ring-[#d9e3f5]"
             />
 
           </div>
@@ -95,18 +95,18 @@ export default function SalesForm() {
               htmlFor="notes"
               className="mb-2 block text-sm font-medium text-black"
             >
-              Notes 
+              Notes
             </label>
 
             <Input
               id="notes"
               placeholder="Add note about this sale"
-              className="h-10 border-[#dcdcdc] text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-transparent focus-visible:border-[#dcdcdc] placeholder:text-[#bdbdbd]"
+              className="h-10 border-[#dcdcdc] text-sm shadow-sm outline-none transition focus-visible:border-[#c9d2e3] focus-visible:ring-2 focus-visible:ring-[#d9e3f5] placeholder:text-[#bdbdbd]"
             />
 
           </div>
 
-          <Button className="h-[42px] min-w-[145px] rounded-[10px] bg-[#010245] px-4 text-sm font-medium text-white shadow-none hover:bg-[#010245]">
+          <Button className="h-[42px] min-w-[145px] rounded-[10px] bg-[#010221] px-4 text-sm font-medium text-white shadow-none hover:bg-[#03042e]">
             Add Sale +
           </Button>
 
