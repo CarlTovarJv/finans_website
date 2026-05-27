@@ -16,7 +16,7 @@ export default function NavbarLogin() {
     <nav className="bg-white shadow-sm">
       <div className="flex items-center justify-between px-6">
         <div className="shrink-0 flex items-center gap-3 mx-2 mb-1">
-          <Link href="/dashboard" className="relative h-20 w-30 block">
+          <Link href="/" className="relative h-20 w-30 block">
             <Image
               src="/logos/finans-imagotipo-2.png"
               alt="Finans Logo"

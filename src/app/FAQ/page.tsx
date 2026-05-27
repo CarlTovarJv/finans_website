@@ -1,3 +1,4 @@
+
 import {
   Accordion,
   AccordionContent,
@@ -7,9 +8,6 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card"
 
 const items = [
@@ -55,7 +53,7 @@ const items = [
 
 export default function FAQs() {
   return (
-    <main className="min-h-screen bg-[#FAFAFA] flex flex-col items-center px-4 py-20">
+    <main className="min-h-screen flex flex-col items-center px-4 py-14">
 
       
       <div className="text-center mb-12">
@@ -116,8 +114,11 @@ export default function FAQs() {
 
 
         </div>
+        
       </div>
+      
 
     </main>
+    
   )
 }
