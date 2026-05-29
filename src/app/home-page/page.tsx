@@ -1,8 +1,29 @@
+
+import FirstBlock from "./components/FirstBlock/page";
+import SecondBlock from "./components/SecondBlock/page";
+import ThirdBlock from "./components/ThirdBlock/page";
+import FourthBlock from "./components/FourthBlock/page";
+import FifthBlock from "./components/FifthBlock/page";
+
 export default function HomePage() {
   return (
-    <div className="w-full h-full bg-gray-200">
-      <h1>Home Page</h1>
-      <p>This is the home page of the app.</p>
-    </div>
+    <main className="w-full h-full">
+      {/* Bloque 1 */}
+      <FirstBlock/>
+
+      {/* Bloque 2 */}
+      <SecondBlock/>
+
+      {/*Bloque 3*/}
+    
+      <ThirdBlock/>
+
+      {/*Bloque 4*/}
+      <FourthBlock/>
+
+      {/*Bloque 5*/}
+      <FifthBlock/>
+
+    </main>
   );
 }
