@@ -1,3 +1,5 @@
+import Footer from "@/components/footer"
+
 
 import {
   Accordion,
@@ -53,7 +55,7 @@ const items = [
 
 export default function FAQs() {
   return (
-    <main className="min-h-screen flex flex-col items-center px-4 py-14">
+    <main className="min-h-screen flex flex-col items-center mt-15">
 
       
       <div className="text-center mb-12">
@@ -100,7 +102,7 @@ export default function FAQs() {
       </Card>
 
     
-      <div className="text-center mt-20">
+      <div className="text-center mt-20 mb-30">
         <h2 className="text-4xl font-bold text-[#010221]">
           Have any other questions?
         </h2>
@@ -116,6 +118,8 @@ export default function FAQs() {
         </div>
         
       </div>
+
+      <Footer />
       
 
     </main>

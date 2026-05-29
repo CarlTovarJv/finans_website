@@ -277,10 +277,10 @@ export default function Debts() {
         )}
       </div>
 
-      {/* Sales History Card */}
+      {/* Debts History Card */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-        <h2 className="text-lg font-bold text-[#010221]">Sales History</h2>
-        <p className="text-xs text-gray-400 mt-0.5 mb-5">All your recorded sales.</p>
+        <h2 className="text-lg font-bold text-[#010221]">Debts History</h2>
+        <p className="text-xs text-gray-400 mt-0.5 mb-5">All your recorded debts.</p>
 
         {/* Table */}
         <div className="w-full">

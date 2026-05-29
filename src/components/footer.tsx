@@ -3,9 +3,9 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-white border-t border-gray-200">
+    <footer className="w-full bg-white border-t border-gray-200 mb-10">
       {/* Main footer content */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-6 py-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:divide-x md:divide-gray-200">
 
           {/* Brand column */}
@@ -13,10 +13,10 @@ export default function Footer() {
             {/* Logo + name */}
             <div className="flex items-center gap-2">
               <Image
-                src="/logos/imagotipo-finans2.png"
-                alt="Kuali logo"
-                width={72}
-                height={72}
+                src="/logos/finans-image-2.png"
+                alt="Finans logo"
+                width={50}
+                height={50}
               />
             </div>
 
@@ -104,11 +104,6 @@ export default function Footer() {
                   Terms of Service
                 </Link>
               </li>
-              <li>
-                <Link href="/faq" className="text-sm text-gray-500 hover:text-[#010221] transition-colors">
-                  FAQ
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -117,19 +112,13 @@ export default function Footer() {
             <p className="text-sm font-semibold text-[#010221]">Company</p>
             <ul className="flex flex-col gap-2">
               <li>
-                <Link
-                  href="/about"
-                  className="text-sm text-gray-500 hover:text-[#010221] transition-colors"
-                >
+                <Link href="/about" className="text-sm text-gray-500 hover:text-[#010221] transition-colors">
                   About Us
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/contact"
-                  className="text-sm text-gray-500 hover:text-[#010221] transition-colors"
-                >
-                  Contact
+                <Link href="/faq" className="text-sm text-gray-500 hover:text-[#010221] transition-colors">
+                  FAQ
                 </Link>
               </li>
             </ul>

@@ -8,7 +8,13 @@ import Link from "next/link";
 export default function NavbarLogin() {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const navLinks = ["Services", "Pricing", "About Us", "FQAs"];
+  const navLinks = [
+    { label: "Services", href: "/services" },
+    { label: "Pricing", href: "/plans" },
+    { label: "About Us", href: "/about-us" },
+    { label: "FQAs", href: "/FAQ" },
+  ];
+
   const linkClass =
     "hover:underline hover:decoration-2 hover:underline-offset-4 hover:decoration-[#010221]";
 
@@ -29,25 +35,24 @@ export default function NavbarLogin() {
 
         <div className="hidden lg:flex items-center space-x-10 cursor-pointer -ml-125">
           {navLinks.map((link) => (
-            <h1 key={link} className={linkClass}>{link}</h1>
+            <Link key={link.href} href={link.href} className={linkClass}>
+              {link.label}
+            </Link>
           ))}
         </div>
 
         <div className="flex items-center space-x-3 mx-0">
-
           <Link href="/sign-in">
             <Button className="hidden lg:flex h-10 w-25 bg-[#010221] text-white hover:bg-[#010221]/90 rounded-lg cursor-pointer" variant="default">
               Login
             </Button>
           </Link>
 
-
           <Link href="/sign-up">
             <Button className="hidden lg:flex h-10 w-25 bg-[#010221] text-white hover:bg-[#010221]/90 rounded-lg cursor-pointer" variant="default">
               Signup
             </Button>
           </Link>
-
 
           <Link href="/sign-up" className="lg:hidden">
             <Button className="h-10 px-4 bg-[#010221] text-white hover:bg-[#010221]/90 rounded-lg text-sm font-medium" variant="default">
@@ -67,11 +72,12 @@ export default function NavbarLogin() {
         </div>
       </div>
 
-
       {menuOpen && (
         <div className="lg:hidden flex flex-col items-start px-10 pb-4 space-y-4 border-t">
           {navLinks.map((link) => (
-            <h1 key={link} className={`cursor-pointer ${linkClass}`}>{link}</h1>
+            <Link key={link.href} href={link.href} className={`cursor-pointer ${linkClass}`}>
+              {link.label}
+            </Link>
           ))}
           <Link href="/sign-in" className="text-sm font-medium pt-2">
             Login
