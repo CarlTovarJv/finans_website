@@ -114,10 +114,6 @@ export default function Debts({ initialDebts }: { initialDebts: Debt[] }) {
   const clearAllRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setDebts(initialDebts);
-  }, [initialDebts]);
-
-  useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpenMenu(null);
       if (clearAllRef.current && !clearAllRef.current.contains(e.target as Node)) setShowClearAll(false);
@@ -182,11 +178,13 @@ export default function Debts({ initialDebts }: { initialDebts: Debt[] }) {
 
   const handleDelete = async (id: number) => {
     await deleteDebt(id);
+    setDebts(prev => prev.filter(d => d.id !== id));
     setOpenMenu(null);
   };
 
   const handleClearAll = async () => {
     await clearAllDebts();
+    setDebts([]);
     setShowClearAll(false);
     setCurrentPage(1);
   };
@@ -205,10 +203,10 @@ export default function Debts({ initialDebts }: { initialDebts: Debt[] }) {
 
           {/* Creditor */}
           <div className="flex-1">
-            <label className="block text-xs font-medium text-gray-500 mb-1.5">Debt</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1.5">Creditor</label>
             <input
               type="text"
-              placeholder="Enter debt"
+              placeholder="Enter creditor"
               value={creditor}
               onChange={e => setCreditor(e.target.value)}
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#010221] placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#010221]/20 focus:border-[#010221] transition-all"
@@ -305,7 +303,7 @@ export default function Debts({ initialDebts }: { initialDebts: Debt[] }) {
               {showClearAll && (
                 <div className="absolute z-50 top-full right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden w-36">
                   <button
-                    onClick={clearAll}
+                    onClick={handleClearAll}
                     className="w-full text-left px-4 py-2.5 text-xs text-red-500 hover:bg-red-50 font-medium transition-colors flex items-center gap-2 cursor-pointer"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
