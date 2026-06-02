@@ -2,12 +2,25 @@
 
 import { useState, useRef, useEffect } from "react";
 
-interface Debt {
+type IncomeType = "Sale" | "Donation" | "Service" | "Investment" | "Other";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface Income {
   id: string;
-  creditor: string;
+  type: IncomeType;
   amount: number;
-  dueDate: string;
+  dateReceived: string;
+  description?: string;
 }
+
+const INCOME_TYPES: IncomeType[] = ["Sale", "Donation", "Service", "Investment", "Other"];
 
 function CalendarPicker({
   value,
@@ -33,19 +46,25 @@ function CalendarPicker({
 
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
   const firstDay = new Date(viewYear, viewMonth, 1).getDay();
-  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
 
   const selected = value
-    ? (() => { const [m, d, y] = value.split("/"); return `${y}-${m?.padStart(2, "0")}-${d?.padStart(2, "0")}`; })()
+    ? (() => {
+      const [m, d, y] = value.split("/");
+      return `${y}-${m?.padStart(2, "0")}-${d?.padStart(2, "0")}`;
+    })()
     : null;
 
   const prevMonth = () => {
-    if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
-    else setViewMonth(m => m - 1);
+    if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1); }
+    else setViewMonth((m) => m - 1);
   };
   const nextMonth = () => {
-    if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); }
-    else setViewMonth(m => m + 1);
+    if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); }
+    else setViewMonth((m) => m + 1);
   };
 
   const selectDay = (day: number) => {
@@ -70,7 +89,7 @@ function CalendarPicker({
         <button onClick={nextMonth} className="p-1 hover:bg-gray-100 rounded-lg text-gray-600 text-sm">›</button>
       </div>
       <div className="grid grid-cols-7 gap-0.5 mb-1">
-        {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(d => (
+        {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
           <div key={d} className="text-center text-[10px] text-gray-400 font-medium py-0.5">{d}</div>
         ))}
       </div>
@@ -84,8 +103,8 @@ function CalendarPicker({
               key={day}
               onClick={() => selectDay(day)}
               className={`text-xs py-1 rounded-lg transition-colors ${isSelected
-                  ? "bg-[#010221] text-white font-semibold"
-                  : "hover:bg-gray-100 text-gray-700"
+                ? "bg-[#010221] text-white font-semibold"
+                : "hover:bg-gray-100 text-gray-700"
                 }`}
             >
               {day}
@@ -97,11 +116,12 @@ function CalendarPicker({
   );
 }
 
-export default function Debts() {
-  const [creditor, setCreditor] = useState("");
+export default function Incomes() {
+  const [incomeType, setIncomeType] = useState<IncomeType>("Sale");
   const [amount, setAmount] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [debts, setDebts] = useState<Debt[]>([]);
+  const [dateReceived, setDateReceived] = useState("");
+  const [description, setDescription] = useState("");
+  const [incomes, setIncomes] = useState<Income[]>([]);
   const [error, setError] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
@@ -109,8 +129,11 @@ export default function Debts() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-  const totalPages = Math.ceil(debts.length / itemsPerPage);
-  const paginated = debts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(incomes.length / itemsPerPage);
+  const paginated = incomes.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const menuRef = useRef<HTMLDivElement>(null);
   const clearAllRef = useRef<HTMLDivElement>(null);
@@ -129,9 +152,8 @@ export default function Debts() {
   };
 
   const handleDateInput = (val: string) => {
-    // Allow typing date manually: digits and slashes only
     const cleaned = val.replace(/[^\d/]/g, "");
-    setDueDate(cleaned);
+    setDateReceived(cleaned);
   };
 
   const isValidDate = (val: string) => {
@@ -145,12 +167,11 @@ export default function Debts() {
 
   const handleAdd = () => {
     const missing = [];
-    if (!creditor.trim()) missing.push("Creditor");
     if (!amount || parseFloat(amount) <= 0) missing.push("Amount");
 
-    if (!dueDate) {
-      missing.push("Due Date");
-    } else if (!isValidDate(dueDate)) {
+    if (!dateReceived) {
+      missing.push("Date Received");
+    } else if (!isValidDate(dateReceived)) {
       setError("The date entered is not valid. Please use the format M/D/YYYY with a real date (e.g. 5/20/2026).");
       return;
     }
@@ -160,27 +181,32 @@ export default function Debts() {
       return;
     }
 
-    setDebts(prev => [{
-      id: Date.now().toString(),
-      creditor: creditor.trim(),
-      amount: parseFloat(parseFloat(amount).toFixed(2)),
-      dueDate,
-    }, ...prev]);
+    setIncomes((prev) => [
+      {
+        id: Date.now().toString(),
+        type: incomeType,
+        amount: parseFloat(parseFloat(amount).toFixed(2)),
+        dateReceived,
+        description: description.trim() || undefined,
+      },
+      ...prev,
+    ]);
 
-    setCreditor("");
+    setIncomeType("Sale");
     setAmount("");
-    setDueDate("");
+    setDateReceived("");
+    setDescription("");
     setError("");
     setCurrentPage(1);
   };
 
-  const deleteDebt = (id: string) => {
-    setDebts(prev => prev.filter(d => d.id !== id));
+  const deleteIncome = (id: string) => {
+    setIncomes((prev) => prev.filter((i) => i.id !== id));
     setOpenMenu(null);
   };
 
   const clearAll = () => {
-    setDebts([]);
+    setIncomes([]);
     setShowClearAll(false);
     setCurrentPage(1);
   };
@@ -189,29 +215,43 @@ export default function Debts() {
     <div className="min-h-screen bg-[#ffffff] px-6 py-8">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#010221]">Debts</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Keep track of what you owe in a simple way</p>
+        <h1 className="text-2xl font-bold text-[#010221]">Add income</h1>
+        <p className="text-sm text-gray-500 mt-0.5">Track incomes to have a better understanding of your finances</p>
       </div>
 
-      {/* Add Debt Card */}
+      {/* Add Income Card */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-5">
         <div className="flex flex-col md:flex-row gap-4 items-end">
 
-          {/* Creditor */}
+          {/* Product Type (dropdown) */}
+          {/* Product Type (shadcn Select) */}
           <div className="flex-1">
-            <label className="block text-xs font-medium text-gray-500 mb-1.5">Debt</label>
-            <input
-              type="text"
-              placeholder="Enter debt"
-              value={creditor}
-              onChange={e => setCreditor(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#010221] placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#010221]/20 focus:border-[#010221] transition-all"
-            />
+            <label className="block text-xs font-medium text-gray-500 mb-1.5">Product type</label>
+            <Select value={incomeType} onValueChange={(val) => setIncomeType(val as IncomeType)}>
+              <SelectTrigger className="w-full bg-white border border-gray-200 rounded-lg text-sm text-[#010221] focus:ring-2 focus:ring-[#010221]/20 focus:border-[#010221] focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=open]:ring-2 data-[state=open]:ring-[#010221]/20 data-[state=open]:border-[#010221]">
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent
+                position="popper"
+                sideOffset={4}
+                className="bg-white border border-gray-200 rounded-xl shadow-lg"
+              >
+                {INCOME_TYPES.map((t) => (
+                  <SelectItem
+                    key={t}
+                    value={t}
+                    className="text-sm text-[#010221] focus:bg-gray-100 focus:text-[#010221] data-[highlighted]:bg-gray-100 cursor-pointer"
+                  >
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* Amount */}
+          {/* Amount Received */}
           <div className="flex-1">
-            <label className="block text-xs font-medium text-gray-500 mb-1.5">Amount</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1.5">Amount received</label>
             <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#010221]/20 focus-within:border-[#010221] transition-all">
               <span className="px-3 py-2 text-sm text-gray-400 bg-gray-50 border-r border-gray-200">$</span>
               <input
@@ -219,20 +259,20 @@ export default function Debts() {
                 inputMode="decimal"
                 placeholder="0.00"
                 value={amount}
-                onChange={e => handleAmountChange(e.target.value)}
+                onChange={(e) => handleAmountChange(e.target.value)}
                 className="flex-1 px-3 py-2 text-sm text-[#010221] placeholder-gray-300 focus:outline-none"
               />
             </div>
           </div>
 
-          {/* Due Date */}
+          {/* Date Received */}
           <div className="flex-1 relative">
-            <label className="block text-xs font-medium text-gray-500 mb-1.5">Due Date</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1.5">Date received</label>
             <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#010221]/20 focus-within:border-[#010221] transition-all">
               <button
                 type="button"
-                onClick={() => setShowCalendar(v => !v)}
-                className="px-3 py-2 text-gray-400 bg-gray-50 border-r cursor-pointer border-gray-200 hover:text-[#010221] transition-colors"
+                onClick={() => setShowCalendar((v) => !v)}
+                className="px-3 py-2 text-gray-400 cursor-pointer bg-gray-50 border-r border-gray-200 hover:text-[#010221] transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" />
@@ -241,18 +281,30 @@ export default function Debts() {
               <input
                 type="text"
                 placeholder="M/D/YYYY"
-                value={dueDate}
-                onChange={e => handleDateInput(e.target.value)}
+                value={dateReceived}
+                onChange={(e) => handleDateInput(e.target.value)}
                 className="flex-1 px-3 py-2 text-sm text-[#010221] placeholder-gray-300 focus:outline-none"
               />
             </div>
             {showCalendar && (
               <CalendarPicker
-                value={dueDate}
-                onChange={setDueDate}
+                value={dateReceived}
+                onChange={setDateReceived}
                 onClose={() => setShowCalendar(false)}
               />
             )}
+          </div>
+
+          {/* Description (optional) */}
+          <div className="flex-1">
+            <label className="block text-xs font-medium text-gray-500 mb-1.5">Description <span className="text-gray-300">(optional)</span></label>
+            <input
+              type="text"
+              placeholder=""
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#010221] placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#010221]/20 focus:border-[#010221] transition-all"
+            />
           </div>
         </div>
 
@@ -260,9 +312,9 @@ export default function Debts() {
         <div className="flex justify-end mt-4">
           <button
             onClick={handleAdd}
-            className="bg-[#010221] text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-[#010221]/85 active:scale-95 transition-all whitespace-nowrap cursor-pointer"
+            className="bg-[#010221] cursor-pointer text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-[#010221]/85 active:scale-95 transition-all whitespace-nowrap"
           >
-            Add Debt +
+            Add income +
           </button>
         </div>
 
@@ -277,23 +329,24 @@ export default function Debts() {
         )}
       </div>
 
-      {/* Debts History Card */}
+      {/* Income History Card */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-        <h2 className="text-lg font-bold text-[#010221]">Debts History</h2>
-        <p className="text-xs text-gray-400 mt-0.5 mb-5">All your recorded debts.</p>
+        <h2 className="text-lg font-bold text-[#010221]">Income History</h2>
+        <p className="text-xs text-gray-400 mt-0.5 mb-5">History of all you added income.</p>
 
         {/* Table */}
         <div className="w-full">
           {/* Header row */}
-          <div className="grid grid-cols-[1fr_1fr_1fr_40px] border-b border-gray-200 pb-2 mb-1">
-            <span className="text-xs font-semibold text-[#010221] px-2">Creditor</span>
+          <div className="grid grid-cols-[1fr_1.5fr_1fr_1fr_40px] border-b border-gray-200 pb-2 mb-1">
+            <span className="text-xs font-semibold text-[#010221] px-2">Type</span>
+            <span className="text-xs font-semibold text-[#010221] px-2">Description</span>
             <span className="text-xs font-semibold text-[#010221] px-2">Amount</span>
-            <span className="text-xs font-semibold text-[#010221] px-2">Due Date</span>
+            <span className="text-xs font-semibold text-[#010221] px-2">Date</span>
             {/* Clear all menu */}
             <div className="relative flex justify-center" ref={clearAllRef}>
               <button
-                onClick={() => setShowClearAll(v => !v)}
-                className="p-1 rounded-md hover:bg-gray-100 text-gray-400 hover:text-[#010221] transition-colors cursor-pointer"
+                onClick={() => setShowClearAll((v) => !v)}
+                className="p-1 rounded-md cursor-pointer hover:bg-gray-100 text-gray-400 hover:text-[#010221] transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="5" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" />
@@ -303,12 +356,12 @@ export default function Debts() {
                 <div className="absolute z-50 top-full right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden w-36">
                   <button
                     onClick={clearAll}
-                    className="w-full text-left px-4 py-2.5 text-xs text-red-500 hover:bg-red-50 font-medium transition-colors flex items-center gap-2 cursor-pointer"
+                    className="w-full text-left px-4 py-2.5 cursor-pointer text-xs text-red-500 hover:bg-red-50 font-medium transition-colors flex items-center gap-2"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
                     </svg>
-                    Clear all debts
+                    Clear all incomes
                   </button>
                 </div>
               )}
@@ -317,29 +370,30 @@ export default function Debts() {
 
           {/* Rows */}
           {paginated.length === 0 ? (
-            <div className="text-center py-10 text-sm text-gray-400">No debts recorded yet.</div>
+            <div className="text-center py-10 text-sm text-gray-400">No incomes recorded yet.</div>
           ) : (
-            paginated.map((debt) => (
+            paginated.map((income) => (
               <div
-                key={debt.id}
-                className="grid grid-cols-[1fr_1fr_1fr_40px] py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50/50 transition-colors rounded-lg"
+                key={income.id}
+                className="grid grid-cols-[1fr_1.5fr_1fr_1fr_40px] py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50/50 transition-colors rounded-lg"
               >
-                <span className="text-sm text-[#010221] px-2">{debt.creditor}</span>
-                <span className="text-sm text-red-400 font-medium px-2">${debt.amount.toFixed(2)}</span>
-                <span className="text-sm text-gray-600 px-2">{debt.dueDate}</span>
-                <div className="relative flex justify-center" ref={openMenu === debt.id ? menuRef : undefined}>
+                <span className="text-sm text-[#010221] px-2">{income.type}</span>
+                <span className="text-sm text-gray-500 px-2">{income.description || "- --"}</span>
+                <span className="text-sm text-green-500 font-medium px-2">${income.amount.toFixed(2)}</span>
+                <span className="text-sm text-gray-600 px-2">{income.dateReceived}</span>
+                <div className="relative flex justify-center" ref={openMenu === income.id ? menuRef : undefined}>
                   <button
-                    onClick={() => setOpenMenu(openMenu === debt.id ? null : debt.id)}
+                    onClick={() => setOpenMenu(openMenu === income.id ? null : income.id)}
                     className="p-1 rounded-md hover:bg-gray-100 text-gray-400 hover:text-[#010221] transition-colors"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="12" cy="5" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" />
                     </svg>
                   </button>
-                  {openMenu === debt.id && (
+                  {openMenu === income.id && (
                     <div className="absolute z-50 top-full right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden w-32">
                       <button
-                        onClick={() => deleteDebt(debt.id)}
+                        onClick={() => deleteIncome(income.id)}
                         className="w-full text-left px-4 py-2.5 text-xs text-red-500 hover:bg-red-50 font-medium transition-colors flex items-center gap-2"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -359,7 +413,7 @@ export default function Debts() {
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-2 mt-6">
             <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
               className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
@@ -367,20 +421,20 @@ export default function Debts() {
                 <polyline points="15 18 9 12 15 6" />
               </svg>
             </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
                 className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${currentPage === page
-                    ? "bg-[#010221] text-white"
-                    : "border border-gray-200 text-gray-600 hover:bg-gray-50"
+                  ? "bg-[#010221] text-white"
+                  : "border border-gray-200 text-gray-600 hover:bg-gray-50"
                   }`}
               >
                 {page}
               </button>
             ))}
             <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
               className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
