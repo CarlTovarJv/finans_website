@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { TrendingUp, Clock, User, Check, Send, BarChart2, ChevronRight, Sparkles } from "lucide-react";
 
 export default function ThirdBlock() {
@@ -12,7 +13,7 @@ export default function ThirdBlock() {
         </div>
 
         {/* Main grid */}
-        <div className="flex flex-col lg:flex-row gap-10 items-start">
+        <div className="flex flex-col lg:flex-row gap-10 items-start relative">
 
           {/* LEFT: Text content */}
           <div className="flex-1 min-w-0">
@@ -80,6 +81,16 @@ export default function ThirdBlock() {
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="hidden lg:flex absolute left-[490px] top-[20px] -translate-x-1/2 -translate-y-1/2 z-10">
+            <Image
+              src="/homepage/Kuali-logo.png"
+              alt="Kuali AI assistant illustration"
+              width={160}
+              height={160}
+              className="object-contain"
+            />
           </div>
 
           {/* RIGHT: Cards */}

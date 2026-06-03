@@ -1,7 +1,6 @@
 const plans = [
   {
     badge: "Starter",
-    highlight: false,
     label: "FREE",
     tagline: "Perfect for getting started",
     price: "0",
@@ -15,11 +14,10 @@ const plans = [
     ],
     cta: "Choose Plan",
     dark: false,
-    golden: false,
+    highlight: false,
   },
   {
     badge: "Smart Choice",
-    highlight: true,
     label: "Platinum",
     tagline: "For businesses ready to grow",
     price: "4.99",
@@ -34,12 +32,11 @@ const plans = [
       "Export to Excel",
     ],
     cta: "Choose Plan",
-    dark: false,
-    golden: false,
+    dark: true,
+    highlight: true,
   },
   {
     badge: "Most Popular",
-    highlight: false,
     label: "Gold",
     tagline: "For teams and expanding businesses",
     price: "9.99",
@@ -52,8 +49,8 @@ const plans = [
       "Daily & weekly reports",
     ],
     cta: "Choose Plan",
-    dark: true,
-    golden: true,
+    dark: false,
+    highlight: false,
   },
 ];
 
@@ -62,60 +59,43 @@ export default function PricingBlock() {
     <section className="font-sans py-16 px-4">
       <div className="text-center max-w-4xl mx-auto mb-20">
         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-[#000000]">
-          Plans for every 
+          Plans for every
           <br />
           stage of your
-          <span className="text-blue-950 mx-3">
-            business
-          </span>
+          <span className="text-[#010221] mx-3">business</span>
         </h1>
-
         <p className="mt-6 text-lg text-gray-500 leading-relaxed">
-          accessible plans for micror and small enterprises
+          accessible plans for micro and small enterprises
         </p>
       </div>
 
       <div className="flex flex-col md:flex-row items-center justify-center gap-6 max-w-5xl mx-auto">
         {plans.map((plan) => (
           <div
-            key={plan.badge}
+            key={plan.label}
             className={`
-              relative rounded-3xl p-6 w-full max-w-[300px] flex flex-col gap-4 shadow-lg
-              ${plan.highlight ? "bg-white scale-105 z-10 py-10 border border-gray-400" : ""}
-              ${plan.dark && !plan.golden ? "bg-[#0f1535]" : ""}
-              ${plan.golden ? "bg-[#1a1a2e]" : ""}
-              ${!plan.dark && !plan.highlight ? "bg-white border border-gray-400" : ""}
+              relative rounded-3xl flex flex-col gap-4 shadow-lg
+              ${plan.dark ? "bg-[#010221]" : "bg-white border border-gray-200"}
+              p-6
             `}
+            style={{ width: "100%", maxWidth: "300px" }}
           >
             {/* Badge */}
             <div className="flex items-center justify-between">
               <span
-                className={`
-                  text-xs font-bold px-3 py-1 rounded-full
-                  ${plan.highlight ? "bg-[#0f1535] text-white" : ""}
-                  ${plan.dark && !plan.golden ? "bg-white/10 text-white" : ""}
-                  ${plan.golden ? "bg-white/10 text-yellow-300" : ""}
-                  ${!plan.dark && !plan.highlight ? "bg-gray-100 text-[#0f1535]" : ""}
+                className={`text-xs font-bold px-3 py-1 rounded-full
+                  ${plan.dark ? "bg-white/10 text-white" : "bg-gray-100 text-[#010221]"}
                 `}
               >
                 {plan.badge}
               </span>
-              {plan.golden && <span className="text-yellow-400 text-lg"></span>}
-              {!plan.golden && (
-                <span className={`text-xs ${plan.dark ? "text-white/30" : "text-gray-300"}`}>⊞</span>
-              )}
+              <span className={`text-xs ${plan.dark ? "text-white/30" : "text-gray-300"}`}>⊞</span>
             </div>
 
             {/* Plan name */}
-            {plan.label && (
-              <h3
-                className={`text-3xl sm:text-4xl font-extrabold leading-tight
-                  ${plan.golden ? "text-yellow-300" : plan.dark ? "text-white" : "text-[#0f1535]"}
-                `}
-              >
-                {plan.label}
-              </h3>
-            )}
+            <h3 className={`text-3xl sm:text-4xl font-extrabold leading-tight ${plan.dark ? "text-white" : "text-[#010221]"}`}>
+              {plan.label}
+            </h3>
 
             {/* Tagline */}
             <p className={`text-xs leading-snug ${plan.dark ? "text-white/60" : "text-gray-400"}`}>
@@ -124,11 +104,7 @@ export default function PricingBlock() {
 
             {/* Price */}
             <div>
-              <span
-                className={`text-4xl font-extrabold
-                  ${plan.golden ? "text-yellow-300" : plan.dark ? "text-white" : "text-[#0f1535]"}
-                `}
-              >
+              <span className={`text-4xl font-extrabold ${plan.dark ? "text-white" : "text-[#010221]"}`}>
                 $ {plan.price}
               </span>
               <span className={`text-xs ml-1 ${plan.dark ? "text-white/50" : "text-gray-400"}`}>
@@ -137,30 +113,24 @@ export default function PricingBlock() {
             </div>
 
             {/* Divider */}
-            <hr className={`${plan.dark ? "border-white/10" : "border-gray-200"}`} />
+            <hr className={plan.dark ? "border-white/10" : "border-gray-200"} />
 
             {/* Features */}
-            <ul className="flex flex-col gap-2">
+            <ul className="flex flex-col gap-2 flex-1">
               {plan.features.map((f) => (
                 <li key={f} className="flex items-start gap-2 text-xs">
-                  <span className={`mt-0.5 ${plan.golden ? "text-yellow-400" : !plan.dark ? "text-[#3B4FE4]" : "text-white/70"}`}>
-                    ✓
-                  </span>
-                  <span className={plan.dark ? "text-white/70" : "text-gray-500"}>
-                    {f}
-                  </span>
+                  <span className={`mt-0.5 ${plan.dark ? "text-white/70" : "text-[#010221]"}`}>✓</span>
+                  <span className={plan.dark ? "text-white/70" : "text-gray-500"}>{f}</span>
                 </li>
               ))}
             </ul>
 
-            {/* CTA Button */}
+            {/* CTA */}
             <button
-              className={`
-                mt-auto w-full py-3 rounded-2xl text-sm font-semibold transition-all duration-200
-                ${plan.highlight ? "bg-[#0f1535] text-white hover:bg-[#1a2550]" : ""}
-                ${plan.dark && !plan.golden ? "bg-white/10 text-white hover:bg-white/20 border border-white/20" : ""}
-                ${plan.golden ? "bg-yellow-400/10 text-yellow-300 hover:bg-yellow-400/20 border border-yellow-400/30" : ""}
-                ${!plan.dark && !plan.highlight ? "bg-[#0f1535] text-white hover:bg-[#1a2550]" : ""}
+              className={`mt-auto w-full py-3 rounded-2xl text-sm font-semibold transition-all duration-200
+                ${plan.dark
+                  ? "bg-white/10 text-white hover:bg-white/20 border border-white/20"
+                  : "bg-[#010221] text-white hover:opacity-90"}
               `}
             >
               {plan.cta}

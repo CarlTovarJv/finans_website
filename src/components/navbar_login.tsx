@@ -31,7 +31,7 @@ export default function NavbarLogin() {
           </Link>
         </div>
 
-        <div className="hidden lg:flex items-center space-x-10 cursor-pointer -ml-160">
+        <div className="hidden lg:flex items-center space-x-10 cursor-pointer -ml-170">
           {navLinks.map((link) => (
             <Link key={link.href} href={link.href} className={linkClass}>
               {link.label}
