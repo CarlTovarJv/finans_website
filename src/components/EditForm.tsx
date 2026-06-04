@@ -14,8 +14,6 @@ export default function EditForm({ data, onSave, onCancel }: EditFormProps) {
     const [items, setItems] = useState<ExtractedData['items']>(data.items);
     const [errors, setErrors] = useState<Record<number, Partial<Record<keyof ExtractedData['items'][0], string>>>>({});
 
-
-
     const updateItem = (index: number, field: keyof ExtractedData['items'][0], value: string | number) => {
         const newItems = [...items];
         newItems[index] = { ...newItems[index], [field]: value };
@@ -55,7 +53,7 @@ export default function EditForm({ data, onSave, onCancel }: EditFormProps) {
             <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
                 <div>
                     <h3 className="text-lg font-bold text-slate-800">Review Products ({items.length})</h3>
-                    <p className="text-xs text-slate-500 font-medium">Verify data extracted by Kuali     AI</p>
+                    <p className="text-xs text-slate-500 font-medium">Verify data extracted by Kuali AI</p>
                 </div>
                 <button onClick={onCancel} className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"><X size={20} /></button>
             </div>
@@ -82,16 +80,14 @@ export default function EditForm({ data, onSave, onCancel }: EditFormProps) {
                                 </div>
                                 {errors[index]?.price && <p className="text-[10px] text-red-500">{errors[index]?.price}</p>}
                             </div>
-                            <div className="md:col-span-1 space-y-1">
+                            <div className="md:col-span-2 space-y-1">
                                 <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Qty.</label>
                                 <input type="number" value={item.quantity} onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 0)} className="w-full text-sm font-bold bg-transparent border-b border-slate-200 focus:border-blue-400 outline-none pb-1" />
                                 {errors[index]?.quantity && <p className="text-[10px] text-red-500">{errors[index]?.quantity}</p>}
                             </div>
-                            <div className="md:col-span-3 space-y-1">
+                            <div className="md:col-span-2 space-y-1">
                                 <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Category</label>
-                                <select value={item.category} onChange={(e) => updateItem(index, 'category', e.target.value)} className="w-full text-[11px] font-black uppercase text-[#010221] bg-transparent outline-none cursor-pointer">
-                                    {Object.values(Category).map((cat) => <option key={cat} value={cat}>{cat}</option>)}
-                                </select>
+                                <p className="text-[11px] font-black uppercase text-[#010221] pb-1">{item.category}</p>
                             </div>
                         </div>
                     </div>

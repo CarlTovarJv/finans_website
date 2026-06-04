@@ -1,12 +1,6 @@
 export enum Category {
-  FOOD_DRINK = "Food / Drink",
-  GROCERIES = "Groceries",
-  ELECTRONICS = "Electronics",
-  CLOTHING = "Clothing / Accessories",
-  HOME = "Home",
-  HARDWARE = "Hardware",
-  SERVICES = "Services",
-  OTHERS = "Others"
+  FOOD_DRINK = "Sales",
+
 }
 
 export interface SaleRecord {
