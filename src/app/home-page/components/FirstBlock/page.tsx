@@ -22,7 +22,7 @@ export default function FirstBlock() {
             see what matters, and make better financial
             decisions with confidence.
           </p>
-          {/* Ayudame chagepete no se como se programa */}
+
           <div className="mt-6">
             <button className="bg-[#010221] text-white px-6 py-2.5 rounded-md hover:bg-[#010221] transition-colors w-full sm:w-auto text-sm font-medium">
               Start for free
