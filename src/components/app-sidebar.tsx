@@ -37,7 +37,7 @@ const data = {
       items: [
         { title: "Inventory", url: "/inventory" },
         { title: "Budgets", url: "/budgets" }, 
-        { title: "My Goals", url: "/goals" },
+        { title: "My Goals", url: "/Goals" },
       ],
     },
     {

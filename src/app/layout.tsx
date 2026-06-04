@@ -53,8 +53,8 @@ export default async function RootLayout({
           ) : (
 
             <SidebarProvider>
-              <AppSidebar />
-              <SidebarInset>
+            <AppSidebar />
+             <SidebarInset>
 
                 <NavbarWrapper userId={userId} />
                 
