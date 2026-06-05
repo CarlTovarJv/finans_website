@@ -6,10 +6,9 @@ from flask_cors import CORS
 from groq import Groq
 from prisma import Prisma
 from dotenv import load_dotenv
-from groq_client import obtener_respuesta_grok
 
 # Carga las variables de entorno desde el archivo .env de la raíz
-load_dotenv()
+load_dotenv(override=True)
 
 # Asegura que Prisma Python use el esquema correcto
 os.environ.setdefault("PRISMA_SCHEMA_PATH", "prisma/schema.python.prisma")
@@ -38,7 +37,6 @@ CALC_PATTERN = re.compile(
 LATEX_PATTERN = re.compile(
     r'\\\[\s*\\text\{.+\}\s*=\s*(\d+\s*-\s*\d+\s*=\s*\d+)\s*\]'
 )
-
 
 async def obtener_contexto_bd():
     """Lee usuarios, ventas, ingresos y egresos usando el nuevo esquema de Prisma de Python."""
@@ -84,7 +82,6 @@ async def obtener_contexto_bd():
     finally:
         await prisma.disconnect()
 
-
 def construir_system_prompt(contexto_bd: str) -> str:
     return f"""Eres Kuali, un asistente financiero inteligente.
 
@@ -100,7 +97,6 @@ REGLAS:
 4. Sé preciso con los números y cálculos monetarios.
 
 {contexto_bd}"""
-
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -129,8 +125,8 @@ def chat():
 
         def format_calc(match):
             if match.group(1):
-                return f"## ${match.group(1)} - ${match.group(2)} = ${match.group(3)}"
-            return f"## ${match.group(4)} - ${match.group(5)} = ${match.group(6)}"
+                return f"## **${match.group(1)} - ${match.group(2)} = ${match.group(3)}**\n\n"
+            return f"## **${match.group(4)} - ${match.group(5)} = ${match.group(6)}**\n\n"
 
         response_content = CALC_PATTERN.sub(format_calc, response_content)
 
@@ -138,7 +134,6 @@ def chat():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 @app.route('/clientes', methods=['GET'])
 def get_clientes():
@@ -166,7 +161,6 @@ def get_clientes():
         return jsonify(resultado), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 if __name__ == '__main__':
     debug_mode = os.getenv("FLASK_DEBUG", "true").lower() == "true"

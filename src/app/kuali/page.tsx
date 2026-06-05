@@ -74,7 +74,7 @@ export default function KualiPage() {
           }
         }
       } catch (e) {
-        console.error("Error al cargar historial de Kuali.", e)
+        console.error("Error loading Kuali history.", e)
       }
     }
     appArrancoTotalmente.current = true;
@@ -216,7 +216,7 @@ export default function KualiPage() {
 
       const assistantMsg: Message = {
         role: 'assistant',
-        content: data.response || 'Lo siento, hubo un error.'
+        content: data.response || 'Sorry, an error occurred.'
       }
 
       const finalMessages = [...newMessages, assistantMsg]
@@ -227,7 +227,7 @@ export default function KualiPage() {
       ));
 
     } catch (error) {
-      setMessages([...newMessages, { role: 'assistant', content: 'Error de conexión con el backend. Asegúrate de que app.py esté corriendo.' }])
+      setMessages([...newMessages, { role: 'assistant', content: 'Backend connection error. Please make sure app.py is running.' }])
     } finally {
       setIsLoading(false)
     }
@@ -244,7 +244,7 @@ export default function KualiPage() {
             onClick={() => handleDeleteChat(contextMenu.chatId)}
             className="w-full text-left px-4 py-2 text-red-400 hover:bg-white/10 text-sm font-semibold transition-colors flex items-center gap-2"
           >
-            Eliminar chat
+            Delete chat
           </button>
         </div>
       )}
@@ -336,7 +336,7 @@ export default function KualiPage() {
                     value={userInput}
                     disabled={isLoading}
                     onChange={(e) => setUserInput(e.target.value)}
-                    placeholder={isLoading ? "Kuali está pensando..." : "Message Kuali"}
+                    placeholder={isLoading ? "Kuali is thinking..." : "Message Kuali"}
                     className="w-full bg-transparent resize-none focus:outline-none text-gray-700 font-medium disabled:opacity-50"
                     onKeyDown={handleKeySubmit}
                   />
@@ -376,7 +376,7 @@ export default function KualiPage() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span className="text-sm font-medium italic text-gray-400">Kuali está pensando...</span>
+                    <span className="text-sm font-medium italic text-gray-400">Kuali is thinking...</span>
                   </div>
                 </div>
               )}
@@ -391,7 +391,7 @@ export default function KualiPage() {
                 type="text"
                 disabled={isLoading}
                 className="flex-1 focus:outline-none text-black font-medium ml-2 disabled:opacity-50"
-                placeholder={isLoading ? "Kuali está pensando..." : "Message Kuali"}
+                placeholder={isLoading ? "Kuali is thinking..." : "Message Kuali"}
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 onKeyDown={handleKeySubmit}
