@@ -65,7 +65,6 @@ export default function ReportsPage() {
 
       const data = await res.json();
 
-      // 👇 backend debe devolver links o base64
       setFiles({
         pdf: data.pdf,
         excel: data.excel,
@@ -120,7 +119,6 @@ export default function ReportsPage() {
         </h1>
       </div>
 
-      {/* ================= IDLE ================= */}
       {step === "idle" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
 
@@ -169,7 +167,6 @@ export default function ReportsPage() {
               Select date range
             </h2>
 
-            {/* 🔥 FIX IMPORTANTE: scroll horizontal */}
             <div className="overflow-x-auto flex justify-center">
 
               <div className="border rounded-2xl p-4 overflow-auto">
@@ -227,7 +224,6 @@ export default function ReportsPage() {
         </div>
       )}
 
-      {/* ================= DONE (PDF + EXCEL FIX) ================= */}
       {step === "done" && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 p-4">
 

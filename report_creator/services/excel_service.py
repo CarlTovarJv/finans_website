@@ -53,7 +53,6 @@ def generate_excel(data, insights=None):
             bottom=Side(style="thin")
         )
 
-        # Encabezados
         for cell in worksheet[1]:
 
             cell.fill = header_fill
@@ -63,7 +62,6 @@ def generate_excel(data, insights=None):
             )
             cell.border = thin_border
 
-        # Bordes y alineación
         for row in worksheet.iter_rows(
             min_row=2
         ):
@@ -75,7 +73,6 @@ def generate_excel(data, insights=None):
                     horizontal="center"
                 )
 
-        # Ajustar ancho automático
         for column in worksheet.columns:
 
             max_length = 0
@@ -181,7 +178,6 @@ def generate_excel(data, insights=None):
                     column=2
                 ).border = thin_border
 
-            # Color de Profit
             profit_cell = summary["B7"]
 
             if insights["profit"] >= 0:
