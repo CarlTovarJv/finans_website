@@ -10,3 +10,14 @@
   --primary-foreground: #e9fafd;
  
 }
+
+.rdp-months {
+  gap: 2rem !important;
+}
+
+@media (max-width: 768px) {
+  .rdp-months {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+}
