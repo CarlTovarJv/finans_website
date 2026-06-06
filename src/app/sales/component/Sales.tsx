@@ -215,16 +215,25 @@ export default function Sales({ initialSales }: { initialSales: Sale[] }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#ffffff] px-6 py-8">
+    <div className="min-h-screen bg-white px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
+
+      {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#010221]">Add Sales</h1>
+        <h1 className="text-xl font-bold text-[#010221] sm:text-2xl">Add Sales</h1>
         <p className="text-sm text-gray-500 mt-0.5">Record a new sale and keep track of your business.</p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-5">
-        <div className="flex flex-col md:flex-row gap-4 items-end">
+      {/* Add Sale Form */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-5 sm:p-6">
+        {/*
+          Responsive grid:
+          - Mobile:  1 column (all fields stacked)
+          - Tablet:  2 columns
+          - Desktop: 4 columns (Product | Quantity | Unit Price | Date)
+        */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
-          <div className="flex-1">
+          <div>
             <label className="block text-xs font-medium text-gray-500 mb-1.5">Product</label>
             <input
               type="text"
@@ -235,7 +244,7 @@ export default function Sales({ initialSales }: { initialSales: Sale[] }) {
             />
           </div>
 
-          <div className="flex-1">
+          <div>
             <label className="block text-xs font-medium text-gray-500 mb-1.5">Quantity</label>
             <input
               type="text"
@@ -247,7 +256,7 @@ export default function Sales({ initialSales }: { initialSales: Sale[] }) {
             />
           </div>
 
-          <div className="flex-1">
+          <div>
             <label className="block text-xs font-medium text-gray-500 mb-1.5">Unit Price</label>
             <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#010221]/20 focus-within:border-[#010221] transition-all">
               <span className="px-3 py-2 text-sm text-gray-400 bg-gray-50 border-r border-gray-200">$</span>
@@ -257,12 +266,13 @@ export default function Sales({ initialSales }: { initialSales: Sale[] }) {
                 placeholder="0.00"
                 value={unitPrice}
                 onChange={(e) => handleUnitPriceChange(e.target.value)}
-                className="flex-1 px-3 py-2 text-sm text-[#010221] placeholder-gray-300 focus:outline-none"
+                className="flex-1 px-3 py-2 text-sm text-[#010221] placeholder-gray-300 focus:outline-none min-w-0"
               />
             </div>
           </div>
 
-          <div className="flex-1 relative">
+          {/* Date: full width on tablet (spans 2), normal on desktop */}
+          <div className="relative">
             <label className="block text-xs font-medium text-gray-500 mb-1.5">Date</label>
             <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#010221]/20 focus-within:border-[#010221] transition-all">
               <button
@@ -279,7 +289,7 @@ export default function Sales({ initialSales }: { initialSales: Sale[] }) {
                 placeholder="M/D/YYYY"
                 value={date}
                 onChange={(e) => handleDateInput(e.target.value)}
-                className="flex-1 px-3 py-2 text-sm text-[#010221] placeholder-gray-300 focus:outline-none"
+                className="flex-1 px-3 py-2 text-sm text-[#010221] placeholder-gray-300 focus:outline-none min-w-0"
               />
             </div>
             {showCalendar && (
@@ -292,8 +302,9 @@ export default function Sales({ initialSales }: { initialSales: Sale[] }) {
           </div>
         </div>
 
-        <div className="flex items-end mt-4">
-          <div className="w-[230px]">
+        {/* Notes + Button row */}
+        <div className="flex flex-col gap-4 mt-4 sm:flex-row sm:items-end">
+          <div className="w-full sm:w-auto sm:min-w-[230px]">
             <label className="block text-xs font-medium text-gray-500 mb-1.5">
               Notes <span className="text-gray-300">(optional)</span>
             </label>
@@ -305,11 +316,11 @@ export default function Sales({ initialSales }: { initialSales: Sale[] }) {
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#010221] placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#010221]/20 focus:border-[#010221] transition-all"
             />
           </div>
-          <div className="flex flex-1 justify-end">
+          <div className="flex sm:flex-1 justify-end">
             <button
               onClick={handleAdd}
               disabled={loading}
-              className="bg-[#010221] cursor-pointer text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-[#010221]/85 active:scale-95 transition-all whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto bg-[#010221] cursor-pointer text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-[#010221]/85 active:scale-95 transition-all whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? "Saving..." : "Add Sale +"}
             </button>
@@ -326,17 +337,25 @@ export default function Sales({ initialSales }: { initialSales: Sale[] }) {
         )}
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+      {/* Sales Table */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6">
         <h2 className="text-lg font-bold text-[#010221]">Sales History</h2>
         <p className="text-xs text-gray-400 mt-0.5 mb-5">All your recorded sales.</p>
 
         <div className="w-full">
-          <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr_40px] border-b border-gray-200 pb-2 mb-1">
+          {/*
+            Table columns by breakpoint:
+            - Mobile:       Product | actions               (all numeric cols hidden)
+            - xs (475px+):  Product | Total | actions
+            - sm (640px+):  Product | Qty | Unit Price | Total | actions
+            - lg (1024px+): Product | Qty | Unit Price | Total | Date | actions
+          */}
+          <div className="grid grid-cols-[1fr_40px] xs:grid-cols-[1fr_1fr_40px] sm:grid-cols-[1.5fr_1fr_1fr_1fr_40px] lg:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_40px] border-b border-gray-200 pb-2 mb-1">
             <span className="text-xs font-semibold text-[#010221] px-2">Product</span>
-            <span className="text-xs font-semibold text-[#010221] px-2">Quantity</span>
-            <span className="text-xs font-semibold text-[#010221] px-2">Unit Price</span>
-            <span className="text-xs font-semibold text-[#010221] px-2">Total Price</span>
-            <span className="text-xs font-semibold text-[#010221] px-2">Date</span>
+            <span className="hidden sm:block text-xs font-semibold text-[#010221] px-2">Quantity</span>
+            <span className="hidden sm:block text-xs font-semibold text-[#010221] px-2">Unit Price</span>
+            <span className="hidden xs:block text-xs font-semibold text-[#010221] px-2">Total</span>
+            <span className="hidden lg:block text-xs font-semibold text-[#010221] px-2">Date</span>
             <div className="relative flex justify-center" ref={clearAllRef}>
               <button
                 onClick={() => setShowClearAll((v) => !v)}
@@ -368,13 +387,37 @@ export default function Sales({ initialSales }: { initialSales: Sale[] }) {
             paginated.map((sale) => (
               <div
                 key={sale.id}
-                className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr_40px] py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50/50 transition-colors rounded-lg"
+                className="grid grid-cols-[1fr_40px] xs:grid-cols-[1fr_1fr_40px] sm:grid-cols-[1.5fr_1fr_1fr_1fr_40px] lg:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_40px] py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50/50 transition-colors rounded-lg items-center"
               >
-                <span className="text-sm text-[#010221] px-2">{sale.item_sold}</span>
-                <span className="text-sm text-gray-600 px-2">{sale.quantity_of_sold_items}</span>
-                <span className="text-sm text-green-500 font-medium px-2">${sale.price_of_item.toFixed(2)}</span>
-                <span className="text-sm text-green-500 font-medium px-2">${(sale.quantity_of_sold_items * sale.price_of_item).toFixed(2)}</span>
-                <span className="text-sm text-gray-600 px-2">{new Date(sale.date).toLocaleDateString()}</span>
+                {/* Product — on mobile also shows total + date stacked */}
+                <div className="px-2">
+                  <span className="text-sm text-[#010221] block">{sale.item_sold}</span>
+                  {/* Only visible on mobile */}
+                  <span className="text-xs text-green-500 font-medium block xs:hidden">
+                    ${(sale.quantity_of_sold_items * sale.price_of_item).toFixed(2)} · {new Date(sale.date).toLocaleDateString()}
+                  </span>
+                </div>
+
+                {/* Quantity — hidden on mobile and xs, visible sm+ */}
+                <span className="hidden sm:block text-sm text-gray-600 px-2">
+                  {sale.quantity_of_sold_items}
+                </span>
+
+                {/* Unit Price — hidden on mobile and xs, visible sm+ */}
+                <span className="hidden sm:block text-sm text-green-500 font-medium px-2">
+                  ${sale.price_of_item.toFixed(2)}
+                </span>
+
+                {/* Total — hidden on mobile, visible xs+ */}
+                <span className="hidden xs:block text-sm text-green-500 font-medium px-2">
+                  ${(sale.quantity_of_sold_items * sale.price_of_item).toFixed(2)}
+                </span>
+
+                {/* Date — hidden until lg */}
+                <span className="hidden lg:block text-sm text-gray-600 px-2">
+                  {new Date(sale.date).toLocaleDateString()}
+                </span>
+
                 <div className="relative flex justify-center" ref={openMenu === String(sale.id) ? menuRef : undefined}>
                   <button
                     onClick={() => setOpenMenu(openMenu === String(sale.id) ? null : String(sale.id))}
@@ -404,7 +447,7 @@ export default function Sales({ initialSales }: { initialSales: Sale[] }) {
         </div>
 
         {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-6">
+          <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
