@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id              Int               @id @default(autoincrement())
+  id              String            @id @default(cuid())
   email           String            @unique
   name            String
   createdAt       DateTime          @default(now())
@@ -29,8 +29,8 @@ model Incomes {
   description String
   income_type String
   date        DateTime @default(now())
-  user_id     Int
-  user        User     @relation(fields: [user_id], references: [id])
+  user_id     String
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model Outflows {
@@ -39,8 +39,8 @@ model Outflows {
   description  String
   outflow_type String
   date         DateTime @default(now())
-  user_id      Int
-  user         User     @relation(fields: [user_id], references: [id])
+  user_id      String
+  user         User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model Sales {
@@ -49,8 +49,8 @@ model Sales {
   quantity_of_sold_items Int
   price_of_item          Float
   date                   DateTime @default(now())
-  user_id                Int
-  user                   User     @relation(fields: [user_id], references: [id])
+  user_id                String
+  user                   User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model Budget {
@@ -60,8 +60,8 @@ model Budget {
   revenues_available Float
   outflows_to_come   Float
   date               DateTime @default(now())
-  user_id            Int
-  user               User     @relation(fields: [user_id], references: [id])
+  user_id            String
+  user               User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model AI_requests {
@@ -69,16 +69,16 @@ model AI_requests {
   request_text  String
   response_text String
   date          DateTime @default(now())
-  user_id       Int
-  user          User     @relation(fields: [user_id], references: [id])
+  user_id       String
+  user          User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model Reports {
   id         Int      @id @default(autoincrement())
   report_url String
   date       DateTime @default(now())
-  user_id    Int
-  user       User     @relation(fields: [user_id], references: [id])
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model Inventory {
@@ -87,20 +87,20 @@ model Inventory {
   quantity_of_available_items Int
   price                       Float
   date                        DateTime @default(now())
-  user_id                     Int
-  user                        User     @relation(fields: [user_id], references: [id])
+  user_id                     String
+  user                        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model Financial_goals {
   id            Int      @id @default(autoincrement())
   goal_name     String
   date          DateTime @default(now())
-  user_id       Int
+  user_id       String
   goal_type     String
   due_date      DateTime @db.Date
   target_amount Float?   @db.Real
   is_completed  Boolean
-  user          User     @relation(fields: [user_id], references: [id])
+  user          User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model Debts {
@@ -109,8 +109,8 @@ model Debts {
   debt_bank String
   amount    Float
   date      DateTime @default(now())
-  user_id   Int
+  user_id   String
   due_date  DateTime @db.Date
   is_paid   Boolean
-  user      User     @relation(fields: [user_id], references: [id])
+  user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
