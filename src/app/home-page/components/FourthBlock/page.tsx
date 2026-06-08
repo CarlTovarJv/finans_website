@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const plans = [
   {
     badge: "Starter",
@@ -27,7 +29,6 @@ const plans = [
       "Note scanning (OCR)",
       "Predictive AI",
       "Financial goals",
-      "Budgets",
       "Monthly reports",
       "Export to Excel",
     ],
@@ -125,15 +126,17 @@ export default function PricingBlock() {
             </ul>
 
             {/* CTA */}
-            <button
-              className={`mt-auto w-full py-3 rounded-2xl text-sm font-semibold transition-all duration-200
-                ${plan.dark
-                  ? "bg-white/10 text-white hover:bg-white/20 border border-white/20"
-                  : "bg-[#010221] text-white hover:opacity-90"}
-              `}
-            >
-              {plan.cta}
-            </button>
+            <Link href="/sign-up">
+              <button
+                className={`mt-auto w-full py-3 rounded-2xl cursor-pointer text-sm font-semibold transition-all duration-200
+                  ${plan.dark
+                    ? "bg-white/10 text-white hover:bg-white/20 border border-white/20"
+                    : "bg-[#010221] text-white hover:opacity-90"}
+                `}
+              >
+                {plan.cta}
+              </button>
+            </Link>
           </div>
         ))}
       </div>
