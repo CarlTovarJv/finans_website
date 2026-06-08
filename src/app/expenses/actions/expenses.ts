@@ -34,13 +34,13 @@ export async function addExpense(data: {
   });
 
   revalidatePath("/expenses");
+  revalidatePath("/dashboard"); // ✅ actualiza el dashboard
 }
 
 export async function deleteExpense(id: number) {
   const { userId } = await auth();
   if (!userId) throw new Error("Not authenticated");
 
-  // Verifica que el expense pertenece al usuario
   const expense = await prisma.outflows.findUnique({
     where: { id },
     select: { user_id: true },
@@ -55,6 +55,7 @@ export async function deleteExpense(id: number) {
   });
 
   revalidatePath("/expenses");
+  revalidatePath("/dashboard"); // ✅ actualiza el dashboard
 }
 
 export async function clearAllExpenses() {
@@ -66,4 +67,5 @@ export async function clearAllExpenses() {
   });
 
   revalidatePath("/expenses");
+  revalidatePath("/dashboard"); // ✅ actualiza el dashboard
 }

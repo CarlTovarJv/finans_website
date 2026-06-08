@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useUser } from '@clerk/nextjs'
 import { marked } from 'marked'
 import { SendHorizontal } from 'lucide-react'
 import 'katex/dist/katex.min.css'
@@ -35,7 +36,6 @@ const formatMessageContent = (content: string) => {
   return parsedHtml;
 };
 
-// ─── Header: logo ialog + "Kuali" (mismo estilo que Dashboard) ───────────
 function PageHeader({
   sidebarOpen,
   onToggleSidebar,
@@ -62,7 +62,6 @@ function PageHeader({
   )
 }
 
-// ─── Sidebar: flecha Back arriba, luego chats ────────────────────────────
 function SidebarContent({
   chatHistory,
   activeChatId,
@@ -82,7 +81,6 @@ function SidebarContent({
 }) {
   return (
     <div className="w-[280px] flex flex-col h-full">
-      {/* Top: Back + hide button */}
       <div className="flex justify-between items-center p-4 sm:p-6">
         <a
           href="/dashboard"
@@ -103,7 +101,6 @@ function SidebarContent({
         </button>
       </div>
 
-      {/* New Chat */}
       <div className="px-4 sm:px-6 mb-6 sm:mb-8">
         <button
           onClick={onNewChat}
@@ -114,7 +111,6 @@ function SidebarContent({
         </button>
       </div>
 
-      {/* Chat history */}
       <div className="px-4 sm:px-6 flex-grow overflow-y-auto pb-10">
         <h3 className="text-gray-400 text-[10px] sm:text-xs font-semibold uppercase tracking-widest mb-3 sm:mb-4">Recents</h3>
         <div className="space-y-2 sm:space-y-3">
@@ -145,8 +141,9 @@ function SidebarContent({
   )
 }
 
-// ─── Main page ────────────────────────────────────────────────────────────
 export default function KualiPage() {
+  const { user, isLoaded } = useUser()  // ← Clerk hook
+
   const [mounted, setMounted] = useState(false)
   const [chatHistory, setChatHistory] = useState<Chat[]>([])
   const [activeChatId, setActiveChatId] = useState<string | null>(null)
@@ -253,7 +250,10 @@ export default function KualiPage() {
 
   async function sendMessage() {
     const userQuestion = userInput.trim()
-    if (!userQuestion || isLoading) return
+
+    // Guard: wait for Clerk to load and user to be available
+    if (!userQuestion || isLoading || !isLoaded || !user) return
+
     setUserInput(''); setShowInitial(false); setIsLoading(true)
 
     let currentChatId = activeChatId
@@ -280,7 +280,10 @@ export default function KualiPage() {
       const response = await fetch(`${KUALI_API_URL}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: userQuestion })
+        body: JSON.stringify({
+          question: userQuestion,
+          user_id: user.id,   // ← Clerk user ID sent to backend
+        })
       })
       const data = await response.json()
       const assistantMsg: Message = { role: 'assistant', content: data.response || 'Sorry, an error occurred.' }
@@ -318,7 +321,6 @@ export default function KualiPage() {
   return (
     <div className="h-screen flex overflow-hidden bg-white relative">
 
-      {/* Context menu */}
       {contextMenu && (
         <div
           style={{ top: contextMenu.y, left: contextMenu.x }}
@@ -333,7 +335,6 @@ export default function KualiPage() {
         </div>
       )}
 
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/40 z-20 md:hidden" onClick={() => setSidebarOpen(false)} />
       )}
@@ -381,7 +382,6 @@ export default function KualiPage() {
           showToggle={true}
         />
 
-        {/* Chat area */}
         <div ref={chatContainerRef} className="flex-1 flex flex-col overflow-y-auto px-3 sm:px-8 md:px-12 lg:px-20 pb-6 sm:pb-10">
           {showInitial ? (
             <div className="flex-1 flex flex-col items-center justify-center mb-16 sm:mb-20 px-2">
@@ -400,15 +400,15 @@ export default function KualiPage() {
                   <textarea
                     rows={3}
                     value={userInput}
-                    disabled={isLoading}
+                    disabled={isLoading || !isLoaded}
                     onChange={(e) => setUserInput(e.target.value)}
-                    placeholder={isLoading ? 'Kuali is thinking...' : 'Message Kuali'}
+                    placeholder={!isLoaded ? 'Loading...' : isLoading ? 'Kuali is thinking...' : 'Message Kuali'}
                     className="w-full bg-transparent resize-none focus:outline-none text-gray-700 font-medium disabled:opacity-50 text-sm sm:text-base"
                     onKeyDown={handleKeySubmit}
                   />
                   <button
                     onClick={sendMessage}
-                    disabled={isLoading}
+                    disabled={isLoading || !isLoaded}
                     className="bg-[#C2D4FF] p-2.5 sm:p-3 rounded-full hover:bg-[#b0c4f0] shrink-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <SendHorizontal className="w-4 h-4 sm:w-5 sm:h-5 text-[#010221]" />
@@ -451,26 +451,25 @@ export default function KualiPage() {
           )}
         </div>
 
-        {/* Bottom input bar */}
         {!showInitial && (
           <div className="px-3 sm:px-6 md:px-8 py-3 sm:py-4 bg-white border-t border-gray-100">
             <div className="max-w-xs sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto bg-white border border-gray-200 rounded-2xl px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3 shadow-lg">
               <input
                 type="text"
-                disabled={isLoading}
+                disabled={isLoading || !isLoaded}
                 className="flex-1 focus:outline-none text-black font-medium text-sm sm:text-base ml-1 sm:ml-2 disabled:opacity-50 min-w-0"
-                placeholder={isLoading ? 'Kuali is thinking...' : 'Message Kuali'}
+                placeholder={!isLoaded ? 'Loading...' : isLoading ? 'Kuali is thinking...' : 'Message Kuali'}
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 onKeyDown={handleKeySubmit}
               />
               <button
                 onClick={sendMessage}
-                disabled={isLoading}
+                disabled={isLoading || !isLoaded}
                 className="bg-[#C2D4FF] p-1.5 sm:p-2 rounded-full hover:bg-[#b0c4f0] shrink-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                    <SendHorizontal className="w-4 h-4 sm:w-5 sm:h-5 text-[#010221]" />
-                  </button>
+                <SendHorizontal className="w-4 h-4 sm:w-5 sm:h-5 text-[#010221]" />
+              </button>
             </div>
           </div>
         )}

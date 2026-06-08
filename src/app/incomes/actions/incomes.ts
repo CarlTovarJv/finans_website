@@ -34,13 +34,13 @@ export async function addIncome(data: {
   });
 
   revalidatePath("/incomes");
+  revalidatePath("/dashboard"); // ✅ actualiza el dashboard
 }
 
 export async function deleteIncome(id: number) {
   const { userId } = await auth();
   if (!userId) throw new Error("Not authenticated");
 
-  // Verifica que el income pertenece al usuario
   const income = await prisma.incomes.findUnique({
     where: { id },
     select: { user_id: true },
@@ -55,6 +55,7 @@ export async function deleteIncome(id: number) {
   });
 
   revalidatePath("/incomes");
+  revalidatePath("/dashboard"); // ✅ actualiza el dashboard
 }
 
 export async function clearAllIncomes() {
@@ -66,4 +67,5 @@ export async function clearAllIncomes() {
   });
 
   revalidatePath("/incomes");
+  revalidatePath("/dashboard"); // ✅ actualiza el dashboard
 }

@@ -35,105 +35,195 @@ LATEX_PATTERN = re.compile(
     r'\\\[\s*\\text\{.+\}\s*=\s*(\d+\s*-\s*\d+\s*=\s*\d+)\s*\]'
 )
 
-async def get_database_context():
+# ─────────────────────────────────────────────
+# DB CONTEXT — filtered by user_id (Clerk ID)
+# ─────────────────────────────────────────────
+
+async def get_database_context(user_id: str):
     prisma = Prisma()
     await prisma.connect()
     try:
-        from datetime import datetime, timezone
-        today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+        from datetime import datetime, timezone, timedelta
 
-        usuarios = await prisma.user.find_many(
-            include={'sales': True, 'incomes': True, 'outflows': True}
+        # Use El Salvador time (UTC-6) only to get the correct local date string.
+        # But query the DB in pure UTC (midnight to midnight) because sales are
+        # stored at 00:00:00 UTC (old records) or 12:00:00 UTC (new records) —
+        # both fall within 00:00 UTC → 23:59 UTC of the same calendar day.
+        sv_tz     = timezone(timedelta(hours=-6))
+        now_sv    = datetime.now(sv_tz)
+        today_str = now_sv.strftime('%Y-%m-%d')
+
+        # Build the UTC window using the local date so it matches the user's day
+        today_utc_start = datetime(now_sv.year, now_sv.month, now_sv.day,
+                                   0, 0, 0, 0, tzinfo=timezone.utc)
+        today_utc_end   = datetime(now_sv.year, now_sv.month, now_sv.day,
+                                   23, 59, 59, 999999, tzinfo=timezone.utc)
+        today_start = today_utc_start
+        today_end   = today_utc_end
+
+        # Verify the user exists
+        user = await prisma.user.find_unique(where={"id": user_id})
+
+        if not user:
+            return f"=== KUALI FINANCIAL APPLICATION DATA ===\nToday's date: {today_str}\n\nNo data found for this user.\n"
+
+        # ── ALL-TIME totals ──────────────────────────────────────────────
+        all_sales    = await prisma.sales.find_many(where={"user_id": user_id})
+        all_incomes  = await prisma.incomes.find_many(where={"user_id": user_id})
+        all_outflows = await prisma.outflows.find_many(where={"user_id": user_id})
+
+        total_sales_alltime    = sum(float(s.price_of_item * s.quantity_of_sold_items) for s in all_sales)
+        total_incomes_alltime  = sum(float(i.amount) for i in all_incomes)
+        total_outflows_alltime = sum(float(o.amount) for o in all_outflows)
+        count_sales_alltime    = sum(s.quantity_of_sold_items for s in all_sales)
+
+        # ── TODAY totals ─────────────────────────────────────────────────
+        today_sales    = await prisma.sales.find_many(
+            where={"user_id": user_id, "date": {"gte": today_start, "lte": today_end}},
+            order={'date': 'desc'}
+        )
+        today_incomes  = await prisma.incomes.find_many(
+            where={"user_id": user_id, "date": {"gte": today_start, "lte": today_end}},
+            order={'date': 'desc'}
+        )
+        today_outflows = await prisma.outflows.find_many(
+            where={"user_id": user_id, "date": {"gte": today_start, "lte": today_end}},
+            order={'date': 'desc'}
         )
 
-        contexto = f"=== KUALI FINANCIAL APPLICATION DATA ===\n"
-        contexto += f"Today's date: {today}\n\n"
-        contexto += "USER CASH FLOW SUMMARY:\n"
+        total_sales_today    = sum(float(s.price_of_item * s.quantity_of_sold_items) for s in today_sales)
+        total_incomes_today  = sum(float(i.amount) for i in today_incomes)
+        total_outflows_today = sum(float(o.amount) for o in today_outflows)
+        count_sales_today    = sum(s.quantity_of_sold_items for s in today_sales)
+        count_transactions_today = len(today_sales)
 
-        for u in usuarios:
-            total_sales    = sum(float(s.price_of_item * s.quantity_of_sold_items) for s in u.sales)
-            total_incomes  = sum(float(i.amount) for i in u.incomes)
-            total_outflows = sum(float(o.amount) for o in u.outflows)
-            cantidad_ventas = len(u.sales)
+        # ── Build context ────────────────────────────────────────────────
+        contexto  = f"=== KUALI FINANCIAL APPLICATION DATA ===\n"
+        contexto += f"Today's date: {today_str}\n\n"
+        contexto += f"USER: {user.name} ({user.email})\n\n"
 
-            contexto += (
-                f"- {u.name} ({u.email}): {cantidad_ventas} sale(s), "
-                f"Total Sales: ${total_sales:.2f}, "
-                f"Other Income: ${total_incomes:.2f}, "
-                f"Expenses/Outflows: ${total_outflows:.2f}\n"
-            )
+        contexto += "── ALL-TIME SUMMARY ──\n"
+        contexto += f"Total items sold (all time): {count_sales_alltime}\n"
+        contexto += f"Total sales revenue (all time): ${total_sales_alltime:.2f}\n"
+        contexto += f"Total other income (all time): ${total_incomes_alltime:.2f}\n"
+        contexto += f"Total expenses (all time): ${total_outflows_alltime:.2f}\n\n"
 
-        contexto += "\nRECENT EXPENSES (OUTFLOWS):\n"
-        outflows = await prisma.outflows.find_many(
-            include={'user': True},
+        contexto += f"── TODAY ({today_str}) SUMMARY ──\n"
+        contexto += f"Sale transactions today: {count_transactions_today}\n"
+        contexto += f"Total items sold today: {count_sales_today}\n"
+        contexto += f"Total sales revenue today: ${total_sales_today:.2f}\n"
+        contexto += f"Total other income today: ${total_incomes_today:.2f}\n"
+        contexto += f"Total expenses today: ${total_outflows_today:.2f}\n"
+        contexto += f"Net profit today: ${(total_sales_today + total_incomes_today - total_outflows_today):.2f}\n\n"
+
+        contexto += f"── TODAY SALES DETAIL ({today_str}) ──\n"
+        if today_sales:
+            for s in today_sales:
+                fecha_str  = s.date.strftime('%Y-%m-%d %H:%M') if s.date else 'N/A'
+                total_item = s.quantity_of_sold_items * s.price_of_item
+                contexto += (
+                    f"- {s.quantity_of_sold_items}x '{s.item_sold}' "
+                    f"@ ${float(s.price_of_item):.2f} each = ${total_item:.2f} | {fecha_str}\n"
+                )
+        else:
+            contexto += "No sales recorded today.\n"
+
+        contexto += f"\n── TODAY INCOMES DETAIL ({today_str}) ──\n"
+        if today_incomes:
+            for i in today_incomes:
+                fecha_str = i.date.strftime('%Y-%m-%d %H:%M') if i.date else 'N/A'
+                contexto += f"- {i.income_type} | {i.description or '---'} | ${float(i.amount):.2f} | {fecha_str}\n"
+        else:
+            contexto += "No other income recorded today.\n"
+
+        contexto += f"\n── TODAY EXPENSES DETAIL ({today_str}) ──\n"
+        if today_outflows:
+            for o in today_outflows:
+                fecha_str = o.date.strftime('%Y-%m-%d %H:%M') if o.date else 'N/A'
+                contexto += f"- {o.outflow_type} | {o.description or '---'} | ${float(o.amount):.2f} | {fecha_str}\n"
+        else:
+            contexto += "No expenses recorded today.\n"
+
+        contexto += "\n── RECENT SALES (last 50, all dates) ──\n"
+        recent_sales = await prisma.sales.find_many(
+            where={"user_id": user_id},
             order={'date': 'desc'},
             take=50
         )
-        for o in outflows:
-            fecha_str = o.date.strftime('%Y-%m-%d') if o.date else 'N/A'
-            contexto += (
-                f"- {o.user.name} | {o.outflow_type} | {o.description or '---'} | "
-                f"${float(o.amount):.2f} | {fecha_str}\n"
-            )
-
-        contexto += "\nRECENT INCOMES:\n"
-        incomes = await prisma.incomes.find_many(
-            include={'user': True},
-            order={'date': 'desc'},
-            take=50
-        )
-        for i in incomes:
-            fecha_str = i.date.strftime('%Y-%m-%d') if i.date else 'N/A'
-            contexto += (
-                f"- {i.user.name} | {i.income_type} | {i.description or '---'} | "
-                f"${float(i.amount):.2f} | {fecha_str}\n"
-            )
-
-        contexto += "\nRECENT SALES:\n"
-        ventas = await prisma.sales.find_many(
-            include={'user': True},
-            order={'date': 'desc'},
-            take=30
-        )
-        for s in ventas:
+        for s in recent_sales:
             fecha_str  = s.date.strftime('%Y-%m-%d') if s.date else 'N/A'
             total_item = s.quantity_of_sold_items * s.price_of_item
             contexto += (
-                f"- {s.user.name} sold {s.quantity_of_sold_items}x '{s.item_sold}' "
-                f"for a total of ${total_item:.2f} on {fecha_str}\n"
+                f"- {s.quantity_of_sold_items}x '{s.item_sold}' "
+                f"= ${total_item:.2f} | {fecha_str}\n"
             )
+
+        contexto += "\n── RECENT INCOMES (last 50) ──\n"
+        recent_incomes = await prisma.incomes.find_many(
+            where={"user_id": user_id},
+            order={'date': 'desc'},
+            take=50
+        )
+        for i in recent_incomes:
+            fecha_str = i.date.strftime('%Y-%m-%d') if i.date else 'N/A'
+            contexto += f"- {i.income_type} | {i.description or '---'} | ${float(i.amount):.2f} | {fecha_str}\n"
+
+        contexto += "\n── RECENT EXPENSES (last 50) ──\n"
+        recent_outflows = await prisma.outflows.find_many(
+            where={"user_id": user_id},
+            order={'date': 'desc'},
+            take=50
+        )
+        for o in recent_outflows:
+            fecha_str = o.date.strftime('%Y-%m-%d') if o.date else 'N/A'
+            contexto += f"- {o.outflow_type} | {o.description or '---'} | ${float(o.amount):.2f} | {fecha_str}\n"
 
         return contexto
     finally:
         await prisma.disconnect()
 
+
 def build_system_prompt(db_context: str) -> str:
     return f"""You are Kuali, an intelligent financial assistant.
 
 Your specialty is:
-- Analyzing purchases, sales, income, and expenses of users.
+- Analyzing purchases, sales, income, and expenses of the user.
 - Giving advice on personal and business finances.
 - Answering questions by analyzing existing transactions from the database.
 
 RULES:
-1. ALWAYS use the real data below when asked about users, finances, income, or sales.
+1. ALWAYS use the real data below when asked about finances, income, or sales.
 2. If asked about something outside of finances, answer briefly but clarify that your area is business finances.
 3. CRITICAL: Detect the language of the user's message and respond EXCLUSIVELY in that language. If the user writes in Spanish, respond in Spanish. If the user writes in English, respond in English. Never mix languages.
 4. Be precise with numbers and monetary calculations.
-5. When the user asks about "today", use the Today's date provided in the data to filter transactions by that date.
+5. CRITICAL: The data already contains pre-calculated totals. ALWAYS read the summary sections first:
+   - "TODAY SUMMARY" → use "Total items sold today" for today's item count, "Sale transactions today" for the number of separate transactions.
+   - "ALL-TIME SUMMARY" → use "Total items sold (all time)" for all-time item counts.
+   - NEVER count lines manually from the RECENT SALES list to answer quantity questions. That list is for detail only, not for counting.
+   - IMPORTANT: Each line like "10x 'tamales' = $50.00" means 10 INDIVIDUAL ITEMS sold in 1 transaction. Do NOT count it as 1 sale. The quantity is the number before "x".
+   - When the user asks "how many did I sell", always answer with the pre-calculated "Total items sold" number, never with the number of transaction lines.
+6. Only discuss data that belongs to this user. Never reference other users.
 
 {db_context}"""
+
+
+# ─────────────────────────────────────────────
+# CHAT ENDPOINT
+# ─────────────────────────────────────────────
 
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.get_json()
     user_question = data.get("question")
+    user_id       = data.get("user_id")
 
     if not user_question:
         return jsonify({"error": "No question was provided"}), 400
+    if not user_id:
+        return jsonify({"error": "No user_id was provided"}), 400
 
     try:
-        db_context    = asyncio.run(get_database_context())
+        db_context    = asyncio.run(get_database_context(str(user_id)))
         system_prompt = build_system_prompt(db_context)
 
         chat_completion = client.chat.completions.create(
@@ -162,6 +252,11 @@ def chat():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+
+# ─────────────────────────────────────────────
+# CLIENTES ENDPOINT (kept for compatibility)
+# ─────────────────────────────────────────────
+
 @app.route('/clientes', methods=['GET'])
 def get_clients():
     async def fetch():
@@ -187,6 +282,7 @@ def get_clients():
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
 
 # ─────────────────────────────────────────────
 # PDF HELPERS
@@ -266,6 +362,7 @@ def pdf_total(c, label, value, y, width):
     c.drawRightString(width - MARGIN - 6, y - 18, value)
     c.setFillColor(colors.black)
 
+
 # ─────────────────────────────────────────────
 # EXCEL HELPERS
 # ─────────────────────────────────────────────
@@ -304,21 +401,25 @@ def excel_style(ws, headers, rows, col_widths):
     for col_idx, w in enumerate(col_widths, 1):
         ws.column_dimensions[get_column_letter(col_idx)].width = w
 
+
 # ─────────────────────────────────────────────
-# GENERATE REPORT ENDPOINT
+# GENERATE REPORT ENDPOINT — filtered by user_id
 # ─────────────────────────────────────────────
 
 @app.route('/generate_report', methods=['POST'])
 def generate_report():
 
-    async def fetch(report_type, start_date, end_date):
+    async def fetch(user_id: str, report_type, start_date, end_date):
         prisma = Prisma()
         await prisma.connect()
         try:
+            base_where = {
+                "user_id": user_id,
+                "date": {"gte": start_date, "lte": end_date}
+            }
+
             if report_type == "incomes":
-                rows = await prisma.incomes.find_many(
-                    where={"date": {"gte": start_date, "lte": end_date}}
-                )
+                rows = await prisma.incomes.find_many(where=base_where)
                 data = [
                     {
                         "type":        r.income_type,
@@ -330,9 +431,7 @@ def generate_report():
                 ]
 
             elif report_type == "expenses":
-                rows = await prisma.outflows.find_many(
-                    where={"date": {"gte": start_date, "lte": end_date}}
-                )
+                rows = await prisma.outflows.find_many(where=base_where)
                 data = [
                     {
                         "type":        r.outflow_type,
@@ -344,9 +443,7 @@ def generate_report():
                 ]
 
             elif report_type == "sales":
-                rows = await prisma.sales.find_many(
-                    where={"date": {"gte": start_date, "lte": end_date}}
-                )
+                rows = await prisma.sales.find_many(where=base_where)
                 data = [
                     {
                         "item":  r.item_sold,
@@ -359,15 +456,9 @@ def generate_report():
                 ]
 
             elif report_type == "profit":
-                ingresos = await prisma.incomes.find_many(
-                    where={"date": {"gte": start_date, "lte": end_date}}
-                )
-                egresos = await prisma.outflows.find_many(
-                    where={"date": {"gte": start_date, "lte": end_date}}
-                )
-                ventas = await prisma.sales.find_many(
-                    where={"date": {"gte": start_date, "lte": end_date}}
-                )
+                ingresos = await prisma.incomes.find_many(where=base_where)
+                egresos  = await prisma.outflows.find_many(where=base_where)
+                ventas   = await prisma.sales.find_many(where=base_where)
                 total_in  = sum(float(r.amount) for r in ingresos) + sum(float(r.price_of_item * r.quantity_of_sold_items) for r in ventas)
                 total_out = sum(float(r.amount) for r in egresos)
                 profit    = total_in - total_out
@@ -385,15 +476,34 @@ def generate_report():
 
     try:
         body        = request.get_json()
+        user_id     = body.get("user_id")
         report_type = body.get("report_type", "incomes")
         start_date  = body.get("start_date")
         end_date    = body.get("end_date")
 
-        from datetime import datetime
-        start_dt = datetime.strptime(start_date, "%Y-%m-%d")
-        end_dt   = datetime.strptime(end_date,   "%Y-%m-%d")
+        if not user_id:
+            return jsonify({"error": "No user_id was provided"}), 400
 
-        data = asyncio.run(fetch(report_type, start_dt, end_dt))
+        from datetime import datetime, timezone, timedelta
+
+        # FIX: Query the DB using midnight-to-midnight UTC for the selected dates.
+        # Sales are stored at 00:00:00 UTC (old records) or 12:00:00 UTC (new
+        # records via Date.UTC noon fix) — both fall within the same UTC calendar
+        # day, so this range captures everything correctly without any offset shift.
+        start_dt = datetime.strptime(start_date, "%Y-%m-%d").replace(
+            hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc
+        )
+        end_dt   = datetime.strptime(end_date, "%Y-%m-%d").replace(
+            hour=23, minute=59, second=59, microsecond=999999, tzinfo=timezone.utc
+        )
+
+        print(f"DEBUG report: user={user_id} type={report_type} "
+              f"start_sv={start_date} end_sv={end_date} "
+              f"start_utc={start_dt} end_utc={end_dt}")
+
+        data = asyncio.run(fetch(str(user_id), report_type, start_dt, end_dt))
+
+        print(f"DEBUG report: {len(data)} rows returned")
 
         from reportlab.lib.pagesizes import letter
         from reportlab.pdfgen import canvas as pdf_canvas

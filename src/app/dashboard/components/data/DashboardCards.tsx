@@ -20,7 +20,7 @@ type Props = {
 };
 
 export function DashboardCards({ today, weekly, monthly }: Props) {
-    const [period, setPeriod] = useState<Period>("Monthly");
+    const [period, setPeriod] = useState<Period>("Today");
 
     const data = period === "Today" ? today : period === "Weekly" ? weekly : monthly;
 

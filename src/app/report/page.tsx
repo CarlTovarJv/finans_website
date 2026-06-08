@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
 import { Calendar } from "@/components/ui/calendar";
 import type { DateRange } from "react-day-picker";
 import { format } from "date-fns";
@@ -16,6 +17,8 @@ import {
 } from "lucide-react";
 
 export default function ReportsPage() {
+  const { user, isLoaded } = useUser();
+
   const [selectedReport, setSelectedReport] = useState("");
   const [step, setStep] = useState<"idle" | "calendar" | "loading" | "done">("idle");
   const [date, setDate] = useState<DateRange | undefined>(undefined);
@@ -23,7 +26,6 @@ export default function ReportsPage() {
 
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-  // Only freeze body scrolling when a modal step is active
   useEffect(() => {
     if (step !== "idle" && step !== "loading") {
       document.body.style.overflow = "hidden";
@@ -36,20 +38,27 @@ export default function ReportsPage() {
   }, [step]);
 
   useEffect(() => {
-    const scrollableEl = document.querySelector('[data-sidebar="inset"]') as HTMLElement
-    if (scrollableEl) scrollableEl.style.overflow = "hidden"
+    const scrollableEl = document.querySelector('[data-sidebar="inset"]') as HTMLElement;
+    if (scrollableEl) scrollableEl.style.overflow = "hidden";
     return () => {
-      if (scrollableEl) scrollableEl.style.overflow = ""
-    }
-  }, [])
+      if (scrollableEl) scrollableEl.style.overflow = "";
+    };
+  }, []);
 
-  function formatDate(d?: Date) {
+  // FIX: Use local date parts explicitly to avoid UTC shift (e.g. midnight local
+  // becoming the previous day when converted to UTC by toISOString / date-fns).
+  function formatDate(d?: Date): string {
     if (!d) return "";
-    return format(d, "yyyy-MM-dd");
+    const yyyy = d.getFullYear();
+    const mm   = String(d.getMonth() + 1).padStart(2, "0");
+    const dd   = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
   }
 
   async function generateReport() {
     if (!date?.from || !date?.to || !selectedReport) return;
+    if (!isLoaded || !user) return;
+
     setStep("loading");
 
     try {
@@ -57,10 +66,10 @@ export default function ReportsPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          user_id: 1,
+          user_id:     user.id,
           report_type: selectedReport,
-          start_date: formatDate(date.from),
-          end_date: formatDate(date.to),
+          start_date:  formatDate(date.from),
+          end_date:    formatDate(date.to),
         }),
       });
 
@@ -152,7 +161,8 @@ export default function ReportsPage() {
                       setSelectedReport(r.value);
                       setStep("calendar");
                     }}
-                    className={`flex items-center gap-4 px-5 py-4 rounded-2xl border ${r.border} bg-white ${r.hover} transition-all duration-200 cursor-pointer group`}
+                    disabled={!isLoaded || !user}
+                    className={`flex items-center gap-4 px-5 py-4 rounded-2xl border ${r.border} bg-white ${r.hover} transition-all duration-200 cursor-pointer group disabled:opacity-40 disabled:cursor-not-allowed`}
                   >
                     <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${r.bg} shrink-0`}>
                       <Icon size={20} className={r.color} />
@@ -174,7 +184,6 @@ export default function ReportsPage() {
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-3xl w-full max-w-3xl shadow-xl my-8">
 
-            {/* Header */}
             <div className="flex items-center justify-between px-7 pt-6 pb-4">
               <div>
                 <h2 className="text-lg font-bold text-[#010221]">Select date range</h2>
@@ -190,10 +199,8 @@ export default function ReportsPage() {
               </button>
             </div>
 
-            {/* Divider */}
             <div className="h-px bg-gray-100 mx-7" />
 
-            {/* Calendar */}
             <div className="px-7 py-5">
               <div className="overflow-x-auto flex justify-center">
                 <Calendar
@@ -217,7 +224,6 @@ export default function ReportsPage() {
               )}
             </div>
 
-            {/* Footer */}
             <div className="flex gap-3 px-7 pb-7">
               <button
                 className="flex-1 py-3 rounded-2xl bg-gray-100 text-[#010221] text-sm font-medium hover:bg-gray-200 transition cursor-pointer"
@@ -256,7 +262,6 @@ export default function ReportsPage() {
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 z-50">
           <div className="bg-white rounded-3xl w-full max-w-sm shadow-xl overflow-hidden">
 
-            {/* Header */}
             <div className="flex items-center justify-between px-6 pt-6 pb-4">
               <div className="flex items-center gap-2">
                 <CheckCircle2 size={18} className="text-green-500" />

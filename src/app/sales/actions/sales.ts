@@ -23,24 +23,28 @@ export async function addSale(data: {
   const { userId } = await auth();
   if (!userId) throw new Error("Not authenticated");
 
+  // Parse "M/D/YYYY" and store at noon UTC to avoid timezone shifting the date
+  const [m, d, y] = data.date.split("/");
+  const dateUTC = new Date(Date.UTC(Number(y), Number(m) - 1, Number(d), 12, 0, 0));
+
   await prisma.sales.create({
     data: {
-      item_sold: data.product,
+      item_sold:              data.product,
       quantity_of_sold_items: data.quantity,
-      price_of_item: data.unitPrice,
-      date: new Date(data.date),
-      user_id: userId,
+      price_of_item:          data.unitPrice,
+      date:                   dateUTC,
+      user_id:                userId,
     },
   });
 
   revalidatePath("/sales");
+  revalidatePath("/dashboard");
 }
 
 export async function deleteSale(id: number) {
   const { userId } = await auth();
   if (!userId) throw new Error("Not authenticated");
 
-  // Verifica que la venta pertenece al usuario
   const sale = await prisma.sales.findUnique({
     where: { id },
     select: { user_id: true },
@@ -55,6 +59,7 @@ export async function deleteSale(id: number) {
   });
 
   revalidatePath("/sales");
+  revalidatePath("/dashboard");
 }
 
 export async function clearAllSales() {
@@ -66,4 +71,5 @@ export async function clearAllSales() {
   });
 
   revalidatePath("/sales");
+  revalidatePath("/dashboard");
 }

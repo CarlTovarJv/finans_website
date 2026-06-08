@@ -22,22 +22,18 @@ export default async function Incomes() {
   weekEnd.setHours(23, 59, 59, 999);
 
   const [yearlyInflows, weeklyInflows, yearlySales, weeklySales] = await Promise.all([
-    // Todos los inflows del año para monthly
     prisma.incomes.findMany({
       where: { user_id: userId, date: { gte: new Date(`${year}-01-01`), lte: new Date(`${year}-12-31`) } },
       select: { amount: true, date: true },
     }),
-    // Inflows de la semana actual para weekly
     prisma.incomes.findMany({
       where: { user_id: userId, date: { gte: weekStart, lte: weekEnd } },
       select: { amount: true, date: true },
     }),
-    // Todas las sales del año para monthly
     prisma.sales.findMany({
       where: { user_id: userId, date: { gte: new Date(`${year}-01-01`), lte: new Date(`${year}-12-31`) } },
       select: { quantity_of_sold_items: true, price_of_item: true, date: true },
     }),
-    // Sales de la semana actual para weekly
     prisma.sales.findMany({
       where: { user_id: userId, date: { gte: weekStart, lte: weekEnd } },
       select: { quantity_of_sold_items: true, price_of_item: true, date: true },
@@ -56,23 +52,33 @@ export default async function Incomes() {
       .reduce((sum, s) => sum + (s.quantity_of_sold_items ?? 0) * (s.price_of_item ?? 0), 0);
   };
 
+  // ✅ Fix: usar getUTCMonth() para evitar desfase de timezone
   const monthlyData = MONTHS.map((month, i) => ({
     label: month,
     income: yearlyInflows
-      .filter(r => new Date(r.date).getMonth() === i)
+      .filter(r => new Date(r.date).getUTCMonth() === i)
       .reduce((sum, r) => sum + (r.amount ?? 0), 0),
-    sales: calculateSalesTotal(yearlySales, (date) => date.getMonth() === i),
+    sales: calculateSalesTotal(yearlySales, (date) => date.getUTCMonth() === i),
   }));
 
+  // ✅ Fix: comparar partes UTC explícitas en lugar de toDateString()
   const weeklyData = DAYS.map((day, i) => {
     const date = new Date(weekStart);
     date.setDate(weekStart.getDate() + i);
+    const y = date.getUTCFullYear();
+    const m = date.getUTCMonth();
+    const d = date.getUTCDate();
     return {
       label: day,
       income: weeklyInflows
-        .filter(r => new Date(r.date).toDateString() === date.toDateString())
+        .filter(r => {
+          const rd = new Date(r.date);
+          return rd.getUTCFullYear() === y && rd.getUTCMonth() === m && rd.getUTCDate() === d;
+        })
         .reduce((sum, r) => sum + (r.amount ?? 0), 0),
-      sales: calculateSalesTotal(weeklySales, (d) => d.toDateString() === date.toDateString()),
+      sales: calculateSalesTotal(weeklySales, (rd) =>
+        rd.getUTCFullYear() === y && rd.getUTCMonth() === m && rd.getUTCDate() === d
+      ),
     };
   });
 

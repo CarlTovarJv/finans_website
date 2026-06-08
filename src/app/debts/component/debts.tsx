@@ -36,13 +36,19 @@ function CalendarPicker({
 
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
   const firstDay = new Date(viewYear, viewMonth, 1).getDay();
-  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
   const selected = value
     ? (() => { const [m, d, y] = value.split("/"); return `${y}-${m?.padStart(2, "0")}-${d?.padStart(2, "0")}`; })()
     : null;
 
+  // AFTER
+  const todayY = today.getFullYear();
+  const todayM = today.getMonth();
+  const todayD = today.getDate();
+
   const prevMonth = () => {
+    if (viewYear === todayY && viewMonth === todayM) return;
     if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
     else setViewMonth(m => m - 1);
   };
@@ -51,7 +57,15 @@ function CalendarPicker({
     else setViewMonth(m => m + 1);
   };
 
+  const isPastMonth = viewYear < todayY || (viewYear === todayY && viewMonth < todayM);
+
+  // AFTER
   const selectDay = (day: number) => {
+    if (
+      viewYear < todayY ||
+      (viewYear === todayY && viewMonth < todayM) ||
+      (viewYear === todayY && viewMonth === todayM && day < todayD)
+    ) return;
     const m = viewMonth + 1;
     const formatted = `${m}/${day}/${viewYear}`;
     onChange(formatted);
@@ -65,12 +79,16 @@ function CalendarPicker({
   return (
     <div ref={ref} className="absolute z-50 top-full mt-1 left-0 bg-white border border-gray-200 rounded-xl shadow-lg p-3 w-64">
       <div className="flex items-center justify-between mb-2">
-        <button onClick={prevMonth} className="p-1 hover:bg-gray-100 rounded-lg text-gray-600 text-sm">‹</button>
+        <button
+          onClick={prevMonth}
+          disabled={viewYear === todayY && viewMonth === todayM}
+          className="p-1 hover:bg-gray-100 rounded-lg text-gray-600 text-sm disabled:opacity-20 disabled:cursor-not-allowed"
+        >‹</button>
         <span className="text-sm font-semibold text-[#010221]">{monthNames[viewMonth]} {viewYear}</span>
         <button onClick={nextMonth} className="p-1 hover:bg-gray-100 rounded-lg text-gray-600 text-sm">›</button>
       </div>
       <div className="grid grid-cols-7 gap-0.5 mb-1">
-        {["Su","Mo","Tu","We","Th","Fr","Sa"].map(d => (
+        {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(d => (
           <div key={d} className="text-center text-[10px] text-gray-400 font-medium py-0.5">{d}</div>
         ))}
       </div>
@@ -79,11 +97,20 @@ function CalendarPicker({
           if (!day) return <div key={`empty-${i}`} />;
           const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
           const isSelected = dateStr === selected;
+          // AFTER
+          const isPast =
+            isPastMonth ||
+            (viewYear === todayY && viewMonth === todayM && day < todayD);
+
           return (
             <button
               key={day}
               onClick={() => selectDay(day)}
-              className={`text-xs py-1 rounded-lg transition-colors ${isSelected ? "bg-[#010221] text-white font-semibold" : "hover:bg-gray-100 text-gray-700"}`}
+              disabled={isPast}
+              className={`text-xs py-1 rounded-lg transition-colors
+      ${isSelected ? "bg-[#010221] text-white font-semibold" : ""}
+      ${isPast ? "text-gray-200 cursor-not-allowed" : !isSelected ? "hover:bg-gray-100 text-gray-700" : ""}
+    `}
             >
               {day}
             </button>
@@ -140,13 +167,17 @@ export default function Debts({ initialDebts }: { initialDebts: Debt[] }) {
     setDueDate(cleaned);
   };
 
+  // AFTER
   const isValidDate = (val: string) => {
     const parts = val.split("/");
     if (parts.length !== 3) return false;
     const [m, d, y] = parts.map(Number);
     if (!m || !d || !y) return false;
-    const date = new Date(y, m - 1, d);
-    return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d;
+    const dateObj = new Date(y, m - 1, d);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (dateObj < today) return false;
+    return dateObj.getFullYear() === y && dateObj.getMonth() === m - 1 && dateObj.getDate() === d;
   };
 
   const handleAdd = async () => {

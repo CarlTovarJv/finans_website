@@ -7,22 +7,34 @@ export default async function Data() {
   
   if (!userId) return <div>Not authenticated</div>;
 
-  const now = new Date();
+  // ── Fecha actual en El Salvador (UTC-6) ───────────────────────
+  // El servidor Next.js corre en UTC. Si son las 18:00 SV, el servidor
+  // ya marcará el día siguiente. Ajustamos manualmente a UTC-6.
+  const nowUTC = new Date();
+  const nowSV  = new Date(nowUTC.getTime() - 6 * 60 * 60 * 1000);
 
-  // ── Rangos ────────────────────────────────────────────────────
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-  const todayEnd   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+  const svY = nowSV.getUTCFullYear();
+  const svM = nowSV.getUTCMonth();
+  const svD = nowSV.getUTCDate();
 
-  const weekDay       = now.getDay();
-  const weekStart     = new Date(now); weekStart.setDate(now.getDate() - weekDay); weekStart.setHours(0, 0, 0, 0);
-  const weekEnd       = new Date(now); weekEnd.setDate(weekStart.getDate() + 6);   weekEnd.setHours(23, 59, 59, 999);
-  const prevWeekStart = new Date(weekStart); prevWeekStart.setDate(weekStart.getDate() - 7);
-  const prevWeekEnd   = new Date(weekEnd);   prevWeekEnd.setDate(weekEnd.getDate() - 7);
+  // Rangos en UTC puro (medianoche a medianoche UTC) usando la fecha SV.
+  // Las ventas se guardan a 00:00 UTC (antiguas) o 12:00 UTC (nuevas) —
+  // ambas caen dentro del mismo día UTC, así que este rango las captura.
+  const todayStart = new Date(Date.UTC(svY, svM, svD,  0,  0,  0,   0));
+  const todayEnd   = new Date(Date.UTC(svY, svM, svD, 23, 59, 59, 999));
 
-  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const thisMonthEnd   = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const lastMonthEnd   = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+  // Semana: domingo→sábado usando la fecha SV
+  const weekDay       = nowSV.getUTCDay();
+  const weekStart     = new Date(Date.UTC(svY, svM, svD - weekDay,      0,  0,  0,   0));
+  const weekEnd       = new Date(Date.UTC(svY, svM, svD - weekDay + 6, 23, 59, 59, 999));
+  const prevWeekStart = new Date(Date.UTC(svY, svM, svD - weekDay - 7,      0,  0,  0,   0));
+  const prevWeekEnd   = new Date(Date.UTC(svY, svM, svD - weekDay - 1,     23, 59, 59, 999));
+
+  // Mes usando la fecha SV
+  const thisMonthStart = new Date(Date.UTC(svY, svM,     1,  0,  0,  0,   0));
+  const thisMonthEnd   = new Date(Date.UTC(svY, svM + 1, 0, 23, 59, 59, 999));
+  const lastMonthStart = new Date(Date.UTC(svY, svM - 1, 1,  0,  0,  0,   0));
+  const lastMonthEnd   = new Date(Date.UTC(svY, svM,     0, 23, 59, 59, 999));
 
   // ── Queries ───────────────────────────────────────────────────
   const [
@@ -53,6 +65,9 @@ export default async function Data() {
   const sumSales = (s: { quantity_of_sold_items: number | null; price_of_item: number | null }[]) =>
     s.reduce((acc, x) => acc + (x.quantity_of_sold_items ?? 0) * (x.price_of_item ?? 0), 0);
 
+  const sumUnits = (s: { quantity_of_sold_items: number | null }[]) =>
+    s.reduce((acc, x) => acc + (x.quantity_of_sold_items ?? 0), 0);
+
   const pct = (current: number, prev: number) =>
     prev > 0 ? Math.round(((current - prev) / prev) * 100) : null;
 
@@ -76,7 +91,7 @@ export default async function Data() {
         totalIncome:  todayIncome,
         totalExpense: todayExpense,
         totalProfit:  todayIncome - todayExpense,
-        totalSales:   todaySalesRaw.length,
+        totalSales:   sumUnits(todaySalesRaw),
         incomePct:    null,
         expensePct:   null,
         salesPct:     null,
@@ -85,19 +100,19 @@ export default async function Data() {
         totalIncome:  weekIncome,
         totalExpense: weekExpense,
         totalProfit:  weekIncome - weekExpense,
-        totalSales:   weekSalesRaw.length,
+        totalSales:   sumUnits(weekSalesRaw),
         incomePct:    pct(weekIncome, prevWeekIncome),
         expensePct:   pct(weekExpense, prevWeekExpense),
-        salesPct:     weekSalesRaw.length - prevWeekSalesRaw.length,
+        salesPct:     sumUnits(weekSalesRaw) - sumUnits(prevWeekSalesRaw),
       }}
       monthly={{
         totalIncome:  monthIncome,
         totalExpense: monthExpense,
         totalProfit:  monthIncome - monthExpense,
-        totalSales:   thisMonthSalesRaw.length,
+        totalSales:   sumUnits(thisMonthSalesRaw),
         incomePct:    pct(monthIncome, lastIncome),
         expensePct:   pct(monthExpense, lastExpense),
-        salesPct:     thisMonthSalesRaw.length - lastMonthSalesRaw.length,
+        salesPct:     sumUnits(thisMonthSalesRaw) - sumUnits(lastMonthSalesRaw),
       }}
     />
   );

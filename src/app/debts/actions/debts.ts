@@ -22,12 +22,15 @@ export async function addDebt(data: {
   const { userId } = await auth();
   if (!userId) throw new Error("Not authenticated");
 
+  const [m, d, y] = data.due_date.split("/");
+  const dueDateUTC = new Date(Date.UTC(Number(y), Number(m) - 1, Number(d), 12, 0, 0));
+
   await prisma.debts.create({
     data: {
-      debt_name: data.debt_bank,
+      debt_name: data.debt_bank,  
       debt_bank: data.debt_bank,
       amount: data.amount,
-      due_date: new Date(data.due_date),
+      due_date: dueDateUTC,
       user_id: userId,
       is_paid: false,
       date: new Date(),
